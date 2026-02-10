@@ -1,0 +1,42 @@
+🎉 NotebookLM MCP Server has been deployed!
+
+1. Check the deployment status:
+   kubectl get pods -l "app.kubernetes.io/name={{ include "notebooklm-mcp.name" . }},app.kubernetes.io/instance={{ .Release.Name }}"
+
+2. View logs:
+   kubectl logs -l "app.kubernetes.io/name={{ include "notebooklm-mcp.name" . }}" -f
+
+3. Authentication Setup:
+   The server requires Google authentication to access NotebookLM.
+
+   a. Exec into the pod:
+      kubectl exec -it deployment/{{ include "notebooklm-mcp.fullname" . }} -- /bin/bash
+
+   b. Run authentication setup:
+      uv run python scripts/setup_auth.py
+
+   Note: For production, consider pre-configuring authentication and mounting
+   the chrome-user-data volume.
+
+4. Test the MCP server:
+   # Port forward to access locally
+   kubectl port-forward deployment/{{ include "notebooklm-mcp.fullname" . }} 8080:8080
+
+{{- if .Values.persistence.enabled }}
+
+5. Persistent Storage:
+   Your Chrome user data is persisted on PVC: {{ .Values.persistence.existingClaim | default (include "notebooklm-mcp.fullname" .) }}
+   Storage size: {{ .Values.persistence.size }}
+{{- end }}
+
+{{- if .Values.service.enabled }}
+
+6. Service:
+   Service is exposed on port {{ .Values.service.port }}
+   Type: {{ .Values.service.type }}
+{{- end }}
+
+📚 Documentation: https://github.com/yourusername/notebooklm-mcp
+🐛 Issues: https://github.com/yourusername/notebooklm-mcp/issues
+
+Happy automating with NotebookLM! 🚀

@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  notebooklm-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: notebooklm-mcp:latest
+    container_name: notebooklm-mcp
+
+    # Environment variables
+    environment:
+      - NOTEBOOKLM_HEADLESS=true
+      - LOG_LEVEL=INFO
+
+    # Volume for persistent Chrome user data (authentication)
+    volumes:
+      - chrome-user-data:/app/chrome-user-data
+
+    # Restart policy
+    restart: unless-stopped
+
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  chrome-user-data:
+    driver: local

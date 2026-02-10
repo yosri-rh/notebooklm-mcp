@@ -1,0 +1,28 @@
+{{- if and .Values.monitoring.enabled .Values.monitoring.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "notebooklm-mcp-openshift.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "notebooklm-mcp-openshift.labels" . | nindent 4 }}
+    # OpenShift monitoring labels
+    openshift.io/cluster-monitoring: "true"
+spec:
+  selector:
+    matchLabels:
+      {{- include "notebooklm-mcp-openshift.selectorLabels" . | nindent 6 }}
+  endpoints:
+  - port: http
+    path: {{ .Values.monitoring.serviceMonitor.path }}
+    interval: {{ .Values.monitoring.serviceMonitor.interval }}
+    scrapeTimeout: {{ .Values.monitoring.serviceMonitor.scrapeTimeout }}
+    scheme: http
+    {{- if .Values.route.tls.enabled }}
+    tlsConfig:
+      insecureSkipVerify: true
+    {{- end }}
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace }}
+{{- end }}

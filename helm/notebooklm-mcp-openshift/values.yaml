@@ -1,0 +1,288 @@
+# OpenShift 4.19 specific values for notebooklm-mcp
+# Optimized for Red Hat OpenShift Container Platform
+
+replicaCount: 1
+
+image:
+  # Use OpenShift internal registry or external registry
+  repository: image-registry.openshift-image-registry.svc:5000/notebooklm-mcp/notebooklm-mcp
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# OpenShift-specific: Use ImageStream
+imageStream:
+  enabled: true
+  # If enabled, creates an ImageStream for the application
+  # This allows for automatic image updates and S2I builds
+
+# OpenShift-specific: BuildConfig for S2I or Docker builds
+buildConfig:
+  enabled: false
+  strategy: docker  # docker or source
+  git:
+    uri: "https://github.com/yourusername/notebooklm-mcp.git"
+    ref: "main"
+  triggers:
+    - type: ConfigChange
+    - type: ImageChange
+
+serviceAccount:
+  create: true
+  annotations:
+    # OpenShift-specific annotations
+    openshift.io/description: "Service account for NotebookLM MCP Server"
+  name: ""
+
+# OpenShift SecurityContextConstraints
+securityContext:
+  # OpenShift uses SCCs instead of PSP
+  # Use 'restricted-v2' SCC (default in OpenShift 4.11+)
+  # Or create custom SCC if needed
+  sccName: "restricted-v2"  # or "anyuid" if needed (not recommended)
+
+  # Custom SCC settings (if creating custom SCC)
+  createCustomSCC: false
+  customSCC:
+    allowPrivilegeEscalation: false
+    allowPrivilegedContainer: false
+    requiredDropCapabilities:
+      - ALL
+    runAsUser:
+      type: MustRunAsRange
+      uidRangeMin: 1000
+      uidRangeMax: 65535
+    seLinuxContext:
+      type: MustRunAs
+    fsGroup:
+      type: MustRunAs
+    supplementalGroups:
+      type: RunAsAny
+    volumes:
+      - configMap
+      - downwardAPI
+      - emptyDir
+      - persistentVolumeClaim
+      - projected
+      - secret
+
+podAnnotations:
+  # OpenShift-specific annotations
+  openshift.io/scc: "restricted-v2"
+
+podSecurityContext:
+  # OpenShift assigns UIDs automatically from namespace range
+  # Don't hardcode UIDs in OpenShift
+  runAsNonRoot: true
+  # fsGroup will be assigned by OpenShift
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  # OpenShift will assign UID automatically
+
+# Service configuration
+service:
+  enabled: true
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+  annotations:
+    # OpenShift service annotations
+    service.alpha.openshift.io/serving-cert-secret-name: notebooklm-mcp-tls
+
+# OpenShift Route (instead of/in addition to Ingress)
+route:
+  enabled: true
+  annotations:
+    # HAProxy timeout for long-running connections
+    haproxy.router.openshift.io/timeout: 300s
+    # Rate limiting
+    haproxy.router.openshift.io/rate-limit-connections: "true"
+    haproxy.router.openshift.io/rate-limit-connections.concurrent-tcp: "100"
+  host: ""  # Auto-generated if empty: notebooklm-mcp-<namespace>.apps.<cluster-domain>
+  path: /
+  tls:
+    enabled: true
+    termination: edge  # edge, passthrough, or reencrypt
+    insecureEdgeTerminationPolicy: Redirect
+    # Use certificate from service serving cert
+    # Or provide custom certificate:
+    # certificate: |
+    #   -----BEGIN CERTIFICATE-----
+    #   ...
+    # key: |
+    #   -----BEGIN PRIVATE KEY-----
+    #   ...
+    # caCertificate: |
+    #   -----BEGIN CERTIFICATE-----
+    #   ...
+
+# Ingress (optional, Routes are preferred in OpenShift)
+ingress:
+  enabled: false
+
+# Resource limits and requests
+resources:
+  limits:
+    cpu: 2000m
+    memory: 2Gi
+  requests:
+    cpu: 500m
+    memory: 1Gi
+
+# Persistent Volume for chrome-user-data
+persistence:
+  enabled: true
+  # OpenShift storage classes (adjust for your cluster)
+  storageClass: "ocs-storagecluster-ceph-rbd"  # or "gp3-csi", "managed-premium", etc.
+  accessMode: ReadWriteOnce
+  size: 2Gi
+  # For multi-replica scenarios, use RWX (ReadWriteMany)
+  # accessMode: ReadWriteMany
+  # storageClass: "ocs-storagecluster-cephfs"
+
+# Environment variables
+env:
+  NOTEBOOKLM_HEADLESS: "true"
+  LOG_LEVEL: "INFO"
+
+# ConfigMap for additional configuration
+configMap:
+  enabled: true
+  data: {}
+    # Add any additional config here
+
+# Secret for sensitive data (use OpenShift secrets or Vault)
+secret:
+  enabled: false
+  data: {}
+    # GOOGLE_CREDENTIALS: "base64-encoded-credentials"
+
+# Node selector (OpenShift node labels)
+nodeSelector:
+  # Example: Select nodes with specific labels
+  # node-role.kubernetes.io/worker: ""
+  # node.openshift.io/os_id: "rhcos"
+
+# Tolerations for taints
+tolerations: []
+  # - key: "dedicated"
+  #   operator: "Equal"
+  #   value: "ai-workload"
+  #   effect: "NoSchedule"
+
+# Affinity rules
+affinity:
+  # Example: Prefer nodes in specific zones
+  # nodeAffinity:
+  #   preferredDuringSchedulingIgnoredDuringExecution:
+  #   - weight: 100
+  #     preference:
+  #       matchExpressions:
+  #       - key: topology.kubernetes.io/zone
+  #         operator: In
+  #         values:
+  #         - us-east-1a
+
+# Probes configuration
+livenessProbe:
+  enabled: true
+  exec:
+    command:
+    - python3
+    - -c
+    - "import sys; sys.exit(0)"
+  initialDelaySeconds: 30
+  periodSeconds: 30
+  timeoutSeconds: 10
+  failureThreshold: 3
+
+readinessProbe:
+  enabled: true
+  exec:
+    command:
+    - python3
+    - -c
+    - "import sys; sys.exit(0)"
+  initialDelaySeconds: 15
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# Horizontal Pod Autoscaler
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+# OpenShift Monitoring integration
+monitoring:
+  enabled: true
+  # Create ServiceMonitor for Prometheus Operator
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    scrapeTimeout: 10s
+    # Metrics endpoint path
+    path: /metrics
+  # Create PrometheusRule for alerts
+  prometheusRule:
+    enabled: false
+
+# OpenShift Network Policy
+networkPolicy:
+  enabled: true
+  # Egress rules for NotebookLM access
+  egress:
+    - to:
+      - namespaceSelector: {}
+      ports:
+      - protocol: TCP
+        port: 53  # DNS
+      - protocol: UDP
+        port: 53  # DNS
+    - to:
+      - podSelector: {}
+      ports:
+      - protocol: TCP
+        port: 443  # HTTPS for NotebookLM
+  # Ingress rules
+  ingress:
+    - from:
+      - podSelector: {}
+      ports:
+      - protocol: TCP
+        port: 8080
+
+# OpenShift Pipeline (Tekton) integration
+pipeline:
+  enabled: false
+  # Define Tekton pipeline for CI/CD
+
+# Backup configuration using OADP (OpenShift API for Data Protection)
+backup:
+  enabled: false
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  # Velero backup annotations
+  annotations:
+    backup.velero.io/backup-volumes: chrome-user-data
+
+# OpenShift Console integration
+console:
+  # Add application to OpenShift web console
+  link:
+    enabled: true
+    text: "NotebookLM MCP Server"
+    section: "AI & ML Tools"

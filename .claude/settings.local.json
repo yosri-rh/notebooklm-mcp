@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(oc get:*)",
+      "Bash(podman build:*)",
+      "Bash(oc new-build:*)",
+      "Bash(oc start-build:*)",
+      "Bash(oc whoami:*)",
+      "Bash(podman tag:*)",
+      "Bash(podman push:*)",
+      "Bash(oc import-image:*)",
+      "Bash(oc logs:*)",
+      "Bash(oc project:*)",
+      "Bash(helm install:*)",
+      "Bash(oc describe:*)",
+      "Bash(oc delete:*)",
+      "Bash(xargs:*)",
+      "Bash(oc set resources:*)",
+      "Bash(helm uninstall:*)",
+      "Bash(helm list:*)",
+      "Bash(oc set env:*)",
+      "Bash(oc exec:*)",
+      "Bash(podman:*)",
+      "Bash(podman info:*)",
+      "Bash(chmod:*)"
+    ]
+  }
+}

@@ -1,0 +1,78 @@
+{{- if .Values.securityContext.createCustomSCC }}
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  name: {{ include "notebooklm-mcp-openshift.sccName" . }}
+  labels:
+    {{- include "notebooklm-mcp-openshift.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/description: "Custom SCC for NotebookLM MCP Server with Chromium browser support"
+    openshift.io/reconcile-protect: "false"
+# Allow host IPC for shared memory (required by Chromium)
+allowHostIPC: false
+# Allow host network
+allowHostNetwork: false
+# Allow host PID
+allowHostPID: false
+# Allow host ports
+allowHostPorts: false
+# Allow privilege escalation
+allowPrivilegeEscalation: {{ .Values.securityContext.customSCC.allowPrivilegeEscalation | default false }}
+# Allow privileged containers
+allowPrivilegedContainer: {{ .Values.securityContext.customSCC.allowPrivilegedContainer | default false }}
+# Default add capabilities
+defaultAddCapabilities: []
+# Required drop capabilities
+requiredDropCapabilities:
+{{- range .Values.securityContext.customSCC.requiredDropCapabilities }}
+  - {{ . }}
+{{- end }}
+# Allowed capabilities (add SYS_ADMIN if Chromium sandboxing requires it)
+allowedCapabilities: []
+# Allowed unsafe sysctls
+allowedUnsafeSysctls: []
+# Default allow privilege escalation
+defaultAllowPrivilegeEscalation: false
+# FSGroup strategy
+fsGroup:
+  type: {{ .Values.securityContext.customSCC.fsGroup.type | default "MustRunAs" }}
+  {{- if .Values.securityContext.customSCC.fsGroup.ranges }}
+  ranges:
+  {{- range .Values.securityContext.customSCC.fsGroup.ranges }}
+  - min: {{ .min }}
+    max: {{ .max }}
+  {{- end }}
+  {{- end }}
+# Priority (higher number = higher priority, 0-10 for custom SCCs)
+priority: 10
+# Read only root filesystem
+readOnlyRootFilesystem: false
+# Run as user strategy
+runAsUser:
+  type: {{ .Values.securityContext.customSCC.runAsUser.type | default "MustRunAsRange" }}
+  {{- if eq .Values.securityContext.customSCC.runAsUser.type "MustRunAsRange" }}
+  {{- if .Values.securityContext.customSCC.runAsUser.uidRangeMin }}
+  uidRangeMin: {{ .Values.securityContext.customSCC.runAsUser.uidRangeMin }}
+  uidRangeMax: {{ .Values.securityContext.customSCC.runAsUser.uidRangeMax }}
+  {{- end }}
+  {{- end }}
+# SELinux context strategy
+seLinuxContext:
+  type: {{ .Values.securityContext.customSCC.seLinuxContext.type | default "MustRunAs" }}
+# Supplemental groups strategy
+supplementalGroups:
+  type: {{ .Values.securityContext.customSCC.supplementalGroups.type | default "RunAsAny" }}
+# Users and groups that can use this SCC
+users:
+- system:serviceaccount:{{ .Release.Namespace }}:{{ include "notebooklm-mcp-openshift.serviceAccountName" . }}
+groups: []
+# Volumes that can be used
+volumes:
+{{- range .Values.securityContext.customSCC.volumes }}
+- {{ . }}
+{{- end }}
+# Allow host directory volumes
+allowedHostPaths: []
+# Allowed flex volumes
+allowedFlexVolumes: []
+{{- end }}

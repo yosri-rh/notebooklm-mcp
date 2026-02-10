@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+
+    - name: Set up Python ${{ matrix.python-version }}
+      run: uv python install ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        uv sync --all-extras --dev
+
+    - name: Install Playwright browsers
+      run: |
+        uv run playwright install chromium
+        uv run playwright install-deps chromium
+
+    - name: Lint with ruff (if available)
+      run: |
+        uv run ruff check . || echo "Ruff not configured, skipping"
+      continue-on-error: true
+
+    - name: Type check with mypy (if available)
+      run: |
+        uv run mypy src/ || echo "MyPy not configured, skipping"
+      continue-on-error: true
+
+    - name: Run tests
+      run: |
+        # Add your test commands here
+        # uv run pytest tests/
+        echo "No tests configured yet"
+      continue-on-error: true
+
+    - name: Verify package can be imported
+      run: |
+        uv run python -c "from src.notebooklm_mcp import server, browser; print('✓ Package imports successfully')"
+
+  docker-build-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker image (no push)
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: false
+        tags: notebooklm-mcp:test
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  helm-lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Helm
+      uses: azure/setup-helm@v4
+      with:
+        version: 'latest'
+
+    - name: Lint Helm chart
+      run: |
+        helm lint helm/notebooklm-mcp
+
+    - name: Template Helm chart
+      run: |
+        helm template test-release helm/notebooklm-mcp

@@ -1,0 +1,52 @@
+{{- if .Values.buildConfig.enabled }}
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: {{ include "notebooklm-mcp-openshift.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "notebooklm-mcp-openshift.labels" . | nindent 4 }}
+  annotations:
+    openshift.io/generated-by: "Helm"
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: {{ include "notebooklm-mcp-openshift.fullname" . }}:{{ .Values.image.tag | default .Chart.AppVersion }}
+  source:
+    type: Git
+    git:
+      uri: {{ .Values.buildConfig.git.uri | quote }}
+      ref: {{ .Values.buildConfig.git.ref | quote }}
+    contextDir: "."
+  strategy:
+    type: {{ .Values.buildConfig.strategy | title }}
+    {{- if eq .Values.buildConfig.strategy "docker" }}
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+      noCache: false
+      forcePull: false
+      env:
+      - name: BUILD_LOGLEVEL
+        value: "5"
+    {{- else if eq .Values.buildConfig.strategy "source" }}
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        namespace: openshift
+        name: python:3.12-ubi9
+      env:
+      - name: UPGRADE_PIP_TO_LATEST
+        value: "true"
+    {{- end }}
+  triggers:
+  {{- range .Values.buildConfig.triggers }}
+  - type: {{ .type }}
+    {{- if eq .type "ImageChange" }}
+    imageChange: {}
+    {{- end }}
+  {{- end }}
+  runPolicy: Serial
+  successfulBuildsHistoryLimit: 3
+  failedBuildsHistoryLimit: 3
+{{- end }}

@@ -1,0 +1,144 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "notebooklm-mcp-openshift.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "notebooklm-mcp-openshift.labels" . | nindent 4 }}
+  annotations:
+    # OpenShift-specific annotations
+    openshift.io/deployment.cancelled: "false"
+    app.openshift.io/connects-to: '[{"apiVersion":"apps/v1","kind":"Deployment","name":"{{ include "notebooklm-mcp-openshift.fullname" . }}"}]'
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "notebooklm-mcp-openshift.selectorLabels" . | nindent 6 }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- if .Values.secret.enabled }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        {{- end }}
+        # OpenShift monitoring annotations
+        {{- if .Values.monitoring.enabled }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+        {{- end }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "notebooklm-mcp-openshift.selectorLabels" . | nindent 8 }}
+        # OpenShift-specific labels for topology view
+        app.openshift.io/runtime: python
+        app.kubernetes.io/component: backend
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "notebooklm-mcp-openshift.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+      - name: {{ .Chart.Name }}
+        securityContext:
+          {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+        {{- if .Values.imageStream.enabled }}
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
+        {{- else }}
+        image: {{ include "notebooklm-mcp-openshift.image" . }}
+        {{- end }}
+        imagePullPolicy: {{ include "notebooklm-mcp-openshift.imagePullPolicy" . }}
+        env:
+        {{- range $key, $value := .Values.env }}
+        - name: {{ $key }}
+          value: {{ $value | quote }}
+        {{- end }}
+        {{- if .Values.configMap.enabled }}
+        envFrom:
+        - configMapRef:
+            name: {{ include "notebooklm-mcp-openshift.fullname" . }}
+        {{- end }}
+        {{- if .Values.secret.enabled }}
+        - secretRef:
+            name: {{ include "notebooklm-mcp-openshift.fullname" . }}
+        {{- end }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.service.targetPort }}
+          protocol: TCP
+        {{- if .Values.livenessProbe.enabled }}
+        livenessProbe:
+          exec:
+            command:
+            {{- range .Values.livenessProbe.exec.command }}
+            - {{ . }}
+            {{- end }}
+          initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+        {{- end }}
+        {{- if .Values.readinessProbe.enabled }}
+        readinessProbe:
+          exec:
+            command:
+            {{- range .Values.readinessProbe.exec.command }}
+            - {{ . }}
+            {{- end }}
+          initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+        volumeMounts:
+        - name: chrome-user-data
+          mountPath: /app/chrome-user-data
+        {{- if .Values.service.annotations }}
+        {{- if hasKey .Values.service.annotations "service.alpha.openshift.io/serving-cert-secret-name" }}
+        - name: serving-cert
+          mountPath: /var/run/secrets/serving-cert
+          readOnly: true
+        {{- end }}
+        {{- end }}
+      volumes:
+      - name: chrome-user-data
+        {{- if .Values.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ include "notebooklm-mcp-openshift.fullname" . }}
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
+      {{- if .Values.service.annotations }}
+      {{- if hasKey .Values.service.annotations "service.alpha.openshift.io/serving-cert-secret-name" }}
+      - name: serving-cert
+        secret:
+          secretName: {{ index .Values.service.annotations "service.alpha.openshift.io/serving-cert-secret-name" }}
+          defaultMode: 420
+      {{- end }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

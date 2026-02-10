@@ -1,0 +1,24 @@
+{{- if .Values.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "notebooklm-mcp-openshift.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "notebooklm-mcp-openshift.labels" . | nindent 4 }}
+  {{- if .Values.backup.enabled }}
+  annotations:
+    backup.velero.io/backup-volumes: chrome-user-data
+    backup.velero.io/backup-volumes-excludes: ""
+  {{- end }}
+spec:
+  accessModes:
+    - {{ .Values.persistence.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.size }}
+  {{- if .Values.persistence.storageClass }}
+  storageClassName: {{ .Values.persistence.storageClass }}
+  {{- end }}
+  volumeMode: Filesystem
+{{- end }}

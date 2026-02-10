@@ -1,0 +1,15 @@
+{{- if and .Values.console.link.enabled .Values.route.enabled }}
+apiVersion: console.openshift.io/v1
+kind: ConsoleLink
+metadata:
+  name: {{ include "notebooklm-mcp-openshift.fullname" . }}
+  labels:
+    {{- include "notebooklm-mcp-openshift.labels" . | nindent 4 }}
+spec:
+  applicationMenu:
+    section: {{ .Values.console.link.section | default "AI & ML Tools" }}
+    imageURL: https://raw.githubusercontent.com/yourusername/notebooklm-mcp/main/assets/icon.png
+  href: {{ include "notebooklm-mcp-openshift.consoleLink.url" . }}
+  location: ApplicationMenu
+  text: {{ .Values.console.link.text | default "NotebookLM MCP Server" }}
+{{- end }}

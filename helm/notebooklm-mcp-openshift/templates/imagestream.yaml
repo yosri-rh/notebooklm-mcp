@@ -1,0 +1,31 @@
+{{- if .Values.imageStream.enabled }}
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: {{ include "notebooklm-mcp-openshift.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "notebooklm-mcp-openshift.labels" . | nindent 4 }}
+  annotations:
+    openshift.io/display-name: "NotebookLM MCP Server"
+    openshift.io/generated-by: "Helm"
+spec:
+  lookupPolicy:
+    local: true
+  tags:
+  - name: {{ .Values.image.tag | default .Chart.AppVersion }}
+    annotations:
+      openshift.io/imported-from: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
+      description: "NotebookLM MCP Server container image"
+      iconClass: "icon-python"
+      tags: "python,ai,mcp,notebooklm"
+      version: {{ .Chart.AppVersion | quote }}
+    from:
+      kind: DockerImage
+      name: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
+    importPolicy:
+      scheduled: true
+      insecure: false
+    referencePolicy:
+      type: Source
+{{- end }}

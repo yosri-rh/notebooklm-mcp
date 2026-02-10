@@ -1,0 +1,183 @@
+🎉 NotebookLM MCP Server has been deployed to OpenShift!
+
+OpenShift Version: 4.19
+Release Name: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 DEPLOYMENT STATUS
+
+1. Check deployment status:
+   oc get deployment {{ include "notebooklm-mcp-openshift.fullname" . }} -n {{ .Release.Namespace }}
+
+2. View pod status:
+   oc get pods -l app.kubernetes.io/name={{ include "notebooklm-mcp-openshift.name" . }} -n {{ .Release.Namespace }}
+
+3. Check pod logs:
+   oc logs -f deployment/{{ include "notebooklm-mcp-openshift.fullname" . }} -n {{ .Release.Namespace }}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🌐 ACCESS INFORMATION
+
+{{- if .Values.route.enabled }}
+Route (External Access):
+{{- if .Values.route.tls.enabled }}
+   https://{{ include "notebooklm-mcp-openshift.routeHost" . }}
+{{- else }}
+   http://{{ include "notebooklm-mcp-openshift.routeHost" . }}
+{{- end }}
+
+Get route details:
+   oc get route {{ include "notebooklm-mcp-openshift.fullname" . }} -n {{ .Release.Namespace }}
+{{- end }}
+
+{{- if .Values.service.enabled }}
+Service (Internal Access):
+   {{ include "notebooklm-mcp-openshift.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}
+{{- end }}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔐 AUTHENTICATION SETUP
+
+⚠️  IMPORTANT: Google authentication is required!
+
+Method 1: Using oc rsh (Recommended)
+   # Connect to the pod
+   oc rsh deployment/{{ include "notebooklm-mcp-openshift.fullname" . }} -n {{ .Release.Namespace }}
+
+   # Run authentication script
+   uv run python scripts/setup_auth.py
+
+Method 2: Using oc exec
+   POD=$(oc get pod -l app.kubernetes.io/name={{ include "notebooklm-mcp-openshift.name" . }} -n {{ .Release.Namespace }} -o jsonpath='{.items[0].metadata.name}')
+   oc exec -it $POD -n {{ .Release.Namespace }} -- uv run python scripts/setup_auth.py
+
+Note: Authentication data is stored in the PVC and persists across pod restarts.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💾 STORAGE
+
+{{- if .Values.persistence.enabled }}
+Persistent Volume Claim:
+   Name: {{ include "notebooklm-mcp-openshift.fullname" . }}
+   Size: {{ .Values.persistence.size }}
+   Storage Class: {{ .Values.persistence.storageClass }}
+
+Check PVC status:
+   oc get pvc {{ include "notebooklm-mcp-openshift.fullname" . }} -n {{ .Release.Namespace }}
+{{- else }}
+⚠️  Persistence is disabled. Authentication will be lost on pod restart!
+{{- end }}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔒 SECURITY
+
+{{- if .Values.securityContext.createCustomSCC }}
+Custom SCC Created: {{ include "notebooklm-mcp-openshift.sccName" . }}
+
+View SCC:
+   oc get scc {{ include "notebooklm-mcp-openshift.sccName" . }}
+
+Verify SCC binding:
+   oc get rolebinding {{ include "notebooklm-mcp-openshift.fullname" . }}-scc-binding -n {{ .Release.Namespace }}
+{{- else }}
+Using Standard SCC: {{ .Values.securityContext.sccName }}
+{{- end }}
+
+Service Account: {{ include "notebooklm-mcp-openshift.serviceAccountName" . }}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 MONITORING
+
+{{- if .Values.monitoring.enabled }}
+{{- if .Values.monitoring.serviceMonitor.enabled }}
+✅ ServiceMonitor enabled - Prometheus will scrape metrics
+   oc get servicemonitor {{ include "notebooklm-mcp-openshift.fullname" . }} -n {{ .Release.Namespace }}
+{{- end }}
+
+{{- if .Values.monitoring.prometheusRule.enabled }}
+✅ PrometheusRule enabled - Alerts configured
+   oc get prometheusrule {{ include "notebooklm-mcp-openshift.fullname" . }} -n {{ .Release.Namespace }}
+{{- end }}
+
+View metrics in OpenShift Console:
+   Monitoring → Metrics → Query: container_memory_usage_bytes{container="{{ .Chart.Name }}"}
+{{- end }}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🐛 TROUBLESHOOTING
+
+View events:
+   oc get events -n {{ .Release.Namespace }} --sort-by='.lastTimestamp' | grep {{ include "notebooklm-mcp-openshift.fullname" . }}
+
+Describe deployment:
+   oc describe deployment {{ include "notebooklm-mcp-openshift.fullname" . }} -n {{ .Release.Namespace }}
+
+Check pod details:
+   oc describe pod -l app.kubernetes.io/name={{ include "notebooklm-mcp-openshift.name" . }} -n {{ .Release.Namespace }}
+
+View resource usage:
+   oc adm top pod -l app.kubernetes.io/name={{ include "notebooklm-mcp-openshift.name" . }} -n {{ .Release.Namespace }}
+
+{{- if .Values.networkPolicy.enabled }}
+Check network policy:
+   oc get networkpolicy {{ include "notebooklm-mcp-openshift.fullname" . }} -n {{ .Release.Namespace }}
+{{- end }}
+
+Common issues:
+  - Authentication expired: Re-run setup_auth.py
+  - Pod crash loop: Check logs for Chromium errors
+  - PVC not binding: Verify storage class exists
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔄 MANAGEMENT COMMANDS
+
+Scale deployment:
+   oc scale deployment {{ include "notebooklm-mcp-openshift.fullname" . }} --replicas=2 -n {{ .Release.Namespace }}
+
+Update image:
+   oc set image deployment/{{ include "notebooklm-mcp-openshift.fullname" . }} {{ .Chart.Name }}=NEW_IMAGE -n {{ .Release.Namespace }}
+
+Rollout restart:
+   oc rollout restart deployment/{{ include "notebooklm-mcp-openshift.fullname" . }} -n {{ .Release.Namespace }}
+
+View rollout history:
+   oc rollout history deployment/{{ include "notebooklm-mcp-openshift.fullname" . }} -n {{ .Release.Namespace }}
+
+Rollback:
+   oc rollout undo deployment/{{ include "notebooklm-mcp-openshift.fullname" . }} -n {{ .Release.Namespace }}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📚 AVAILABLE MCP TOOLS
+
+1. list_notebooks() - List all NotebookLM notebooks
+2. create_notebook(name) - Create new notebook
+3. add_source() - Add website/YouTube/text sources
+4. query_notebook() - Ask questions about sources
+5. generate_study_guide() - Generate FAQ/briefing/TOC
+6. generate_audio_overview() - Create podcast-style audio
+7. get_notebook_sources() - List notebook sources
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📖 DOCUMENTATION
+
+- Helm Chart: helm show readme {{ .Chart.Name }}
+- GitHub: https://github.com/yourusername/notebooklm-mcp
+- Issues: https://github.com/yourusername/notebooklm-mcp/issues
+- OpenShift Docs: https://docs.openshift.com/container-platform/4.19/
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✨ Happy automating with NotebookLM on OpenShift! 🚀
+
+For support, visit: https://github.com/yourusername/notebooklm-mcp/issues

@@ -1,0 +1,181 @@
+# Custom values for CRC (CodeReady Containers) deployment
+# Optimized for limited resources
+
+replicaCount: 1
+
+image:
+  # Use CRC internal registry
+  repository: image-registry.openshift-image-registry.svc:5000/notebooklm-mcp/notebooklm-mcp
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+# Enable ImageStream for CRC
+imageStream:
+  enabled: true
+
+# Disable BuildConfig for now - we'll build manually first
+buildConfig:
+  enabled: false
+
+serviceAccount:
+  create: true
+  annotations:
+    openshift.io/description: "Service account for NotebookLM MCP Server"
+
+# Use default SCC for CRC
+securityContext:
+  sccName: "restricted-v2"
+  createCustomSCC: false
+
+podAnnotations:
+  openshift.io/scc: "restricted-v2"
+
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+
+# Service configuration
+service:
+  enabled: true
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+  annotations:
+    service.alpha.openshift.io/serving-cert-secret-name: notebooklm-mcp-tls
+
+# OpenShift Route
+route:
+  enabled: true
+  annotations:
+    haproxy.router.openshift.io/timeout: 300s
+  host: ""  # Auto-generated for CRC
+  path: /
+  tls:
+    enabled: true
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+
+# Reduced resources for CRC (limited to 10.93GB RAM total)
+resources:
+  limits:
+    cpu: 1000m      # 1 CPU
+    memory: 1536Mi  # 1.5GB (reduced from 2GB)
+  requests:
+    cpu: 500m
+    memory: 1Gi
+
+# Persistent storage
+persistence:
+  enabled: true
+  storageClass: "crc-csi-hostpath-provisioner"
+  accessMode: ReadWriteOnce
+  size: 10Gi
+
+# Environment variables
+env:
+  NOTEBOOKLM_HEADLESS: "true"
+  LOG_LEVEL: "INFO"
+
+# ConfigMap
+configMap:
+  enabled: true
+  data: {}
+
+# Secret
+secret:
+  enabled: false
+
+# Node selector - not needed for CRC (single node)
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity
+affinity: {}
+
+# Probes - adjusted for slower CRC startup
+livenessProbe:
+  enabled: true
+  exec:
+    command:
+    - python3
+    - -c
+    - "import sys; sys.exit(0)"
+  initialDelaySeconds: 60  # Increased for CRC
+  periodSeconds: 30
+  timeoutSeconds: 10
+  failureThreshold: 5      # Increased tolerance
+
+readinessProbe:
+  enabled: true
+  exec:
+    command:
+    - python3
+    - -c
+    - "import sys; sys.exit(0)"
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# Disable autoscaling for CRC
+autoscaling:
+  enabled: false
+
+# Disable monitoring for initial CRC deployment (can enable later)
+monitoring:
+  enabled: false
+  serviceMonitor:
+    enabled: false
+  prometheusRule:
+    enabled: false
+
+# Network policy
+networkPolicy:
+  enabled: true
+  egress:
+    - to:
+      - namespaceSelector: {}
+      ports:
+      - protocol: TCP
+        port: 53
+      - protocol: UDP
+        port: 53
+    - to:
+      - podSelector: {}
+      ports:
+      - protocol: TCP
+        port: 443
+      - protocol: TCP
+        port: 80
+  ingress:
+    - from:
+      - podSelector: {}
+      ports:
+      - protocol: TCP
+        port: 8080
+
+# Disable Tekton pipeline for now
+pipeline:
+  enabled: false
+
+# Disable backup for CRC
+backup:
+  enabled: false
+
+# Console link
+console:
+  link:
+    enabled: true
+    text: "NotebookLM MCP Server"
+    section: "AI & ML Tools"

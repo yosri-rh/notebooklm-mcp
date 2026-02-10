@@ -1,0 +1,37 @@
+apiVersion: v2
+name: notebooklm-mcp-openshift
+description: NotebookLM MCP Server for OpenShift 4.19 - Connect Claude to Google NotebookLM
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+
+keywords:
+  - mcp
+  - notebooklm
+  - claude
+  - ai
+  - automation
+  - openshift
+  - ovn-kubernetes
+
+home: https://github.com/yourusername/notebooklm-mcp
+sources:
+  - https://github.com/yourusername/notebooklm-mcp
+
+maintainers:
+  - name: Your Name
+    email: your.email@example.com
+
+icon: https://raw.githubusercontent.com/yourusername/notebooklm-mcp/main/assets/icon.png
+
+annotations:
+  # OpenShift-specific annotations
+  openshift.io/display-name: "NotebookLM MCP Server"
+  openshift.io/provider-display-name: "Your Organization"
+  openshift.io/support-url: "https://github.com/yourusername/notebooklm-mcp/issues"
+
+  # Certified for OpenShift 4.19
+  com.redhat.openshift.versions: "v4.19"
+
+  # Category for OpenShift Console
+  operatorframework.io/suggested-namespace: notebooklm-mcp

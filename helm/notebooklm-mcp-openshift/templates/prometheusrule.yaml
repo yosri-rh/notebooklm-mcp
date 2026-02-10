@@ -1,0 +1,75 @@
+{{- if and .Values.monitoring.enabled .Values.monitoring.prometheusRule.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "notebooklm-mcp-openshift.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "notebooklm-mcp-openshift.labels" . | nindent 4 }}
+    prometheus: k8s
+    role: alert-rules
+spec:
+  groups:
+  - name: notebooklm-mcp.rules
+    interval: 30s
+    rules:
+    # Pod availability alert
+    - alert: NotebookLMMCPPodDown
+      expr: |
+        kube_deployment_status_replicas_available{deployment="{{ include "notebooklm-mcp-openshift.fullname" . }}", namespace="{{ .Release.Namespace }}"} == 0
+      for: 5m
+      labels:
+        severity: critical
+        app: notebooklm-mcp
+      annotations:
+        summary: "NotebookLM MCP Server has no available pods"
+        description: "The NotebookLM MCP Server deployment has had 0 available pods for more than 5 minutes."
+
+    # High memory usage alert
+    - alert: NotebookLMMCPHighMemory
+      expr: |
+        container_memory_usage_bytes{container="{{ .Chart.Name }}", namespace="{{ .Release.Namespace }}"} / container_spec_memory_limit_bytes{container="{{ .Chart.Name }}", namespace="{{ .Release.Namespace }}"} > 0.9
+      for: 5m
+      labels:
+        severity: warning
+        app: notebooklm-mcp
+      annotations:
+        summary: "NotebookLM MCP Server high memory usage"
+        description: "Pod {{`{{ $labels.pod }}`}} is using more than 90% of its memory limit."
+
+    # High CPU usage alert
+    - alert: NotebookLMMCPHighCPU
+      expr: |
+        rate(container_cpu_usage_seconds_total{container="{{ .Chart.Name }}", namespace="{{ .Release.Namespace }}"}[5m]) > 0.9
+      for: 10m
+      labels:
+        severity: warning
+        app: notebooklm-mcp
+      annotations:
+        summary: "NotebookLM MCP Server high CPU usage"
+        description: "Pod {{`{{ $labels.pod }}`}} is using more than 90% CPU for 10 minutes."
+
+    # Crash loop backoff alert
+    - alert: NotebookLMMCPCrashLoop
+      expr: |
+        rate(kube_pod_container_status_restarts_total{container="{{ .Chart.Name }}", namespace="{{ .Release.Namespace }}"}[15m]) > 0
+      for: 5m
+      labels:
+        severity: critical
+        app: notebooklm-mcp
+      annotations:
+        summary: "NotebookLM MCP Server crash loop"
+        description: "Pod {{`{{ $labels.pod }}`}} is in crash loop backoff."
+
+    # Persistent volume usage alert
+    - alert: NotebookLMMCPPVCAlmostFull
+      expr: |
+        kubelet_volume_stats_available_bytes{persistentvolumeclaim="{{ include "notebooklm-mcp-openshift.fullname" . }}", namespace="{{ .Release.Namespace }}"} / kubelet_volume_stats_capacity_bytes{persistentvolumeclaim="{{ include "notebooklm-mcp-openshift.fullname" . }}", namespace="{{ .Release.Namespace }}"} < 0.1
+      for: 5m
+      labels:
+        severity: warning
+        app: notebooklm-mcp
+      annotations:
+        summary: "NotebookLM MCP Server PVC almost full"
+        description: "PVC {{`{{ $labels.persistentvolumeclaim }}`}} has less than 10% space remaining."
+{{- end }}
