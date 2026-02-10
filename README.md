@@ -11,6 +11,73 @@ Connect Claude to Google NotebookLM using browser automation.
 - **Authentication Required**: Requires Google account with NotebookLM access
 - **Maintenance Required**: UI selectors need updates when NotebookLM changes
 
+## Why Browser Automation (Playwright + Chromium)?
+
+### No Public API Available
+
+NotebookLM (free version at https://notebooklm.google.com) provides no programmatic access:
+- ❌ No REST API
+- ❌ No Python SDK
+- ❌ No webhooks or integrations
+
+**The only interface is the web UI**, which requires browser automation.
+
+### Technical Requirements
+
+NotebookLM is a JavaScript single-page application (SPA). To automate it, we need:
+
+1. **JavaScript execution** - The UI renders dynamically via JavaScript
+2. **DOM manipulation** - Click buttons, fill forms, extract data
+3. **Google OAuth** - Authenticate with Google account
+4. **Session management** - Maintain cookies and authentication state
+
+**Simple HTTP clients cannot work** because:
+- Without JavaScript execution, you get empty HTML: `<div id="root"></div>`
+- No access to rendered DOM elements
+- Cannot handle OAuth authentication flow
+
+### Why Playwright + Chromium?
+
+**Playwright** is the best browser automation tool for Python:
+- Modern async API with auto-waiting
+- Python-native support
+- Multi-architecture (ARM64/AMD64)
+- Active development
+
+**Chromium** is required as the browser engine:
+- Executes JavaScript and renders UI
+- Handles Google authentication
+- Provides full browser capabilities
+
+### Container Size: 800MB-2GB
+
+This is **normal** for browser automation containers:
+
+```
+Base Python 3.12:           ~150 MB
+Chromium browser:           ~300 MB
+System dependencies:        ~200 MB (X11, fonts, codecs)
+Python packages:            ~150 MB (Playwright, FastMCP)
+Application code:            ~5 MB
+Total:                      800 MB - 2 GB
+```
+
+**Comparison with similar tools:**
+- Selenium Chrome: ~1.2 GB
+- Browserless: ~1.1 GB
+- Playwright official: ~900 MB
+
+### Alternative: NotebookLM Enterprise API
+
+Google offers **NotebookLM Enterprise** with an official API, but it:
+- Requires Google Cloud project and enterprise licensing
+- Only works with enterprise version, not free NotebookLM
+- API is in alpha (v1alpha)
+
+**This project targets free NotebookLM** to remain accessible without enterprise requirements.
+
+Reference: [NotebookLM Enterprise API Docs](https://docs.cloud.google.com/gemini/enterprise/notebooklm-enterprise/docs/api-notebooks)
+
 ## 🚀 Deployment Options
 
 - **Local Development**: Run with Docker or Python
