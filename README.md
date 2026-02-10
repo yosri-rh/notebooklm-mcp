@@ -80,8 +80,8 @@ Reference: [NotebookLM Enterprise API Docs](https://docs.cloud.google.com/gemini
 
 ## 🚀 Deployment Options
 
-- **Local Development**: Run with Docker or Python
-- **Docker**: Containerized deployment
+- **Local Development**: Run with Podman or Python
+- **Podman**: Containerized deployment
 - **Kubernetes**: Helm chart for standard Kubernetes
 - **OpenShift 4.19**: Optimized Helm chart with Routes, SCCs, and monitoring
 

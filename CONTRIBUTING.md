@@ -33,7 +33,7 @@ This project adheres to a code of conduct. By participating, you are expected to
 ### Prerequisites
 - Python 3.10 or higher
 - [uv](https://github.com/astral-sh/uv) package manager
-- Docker (for containerization testing)
+- Podman (for containerization testing)
 - Kubernetes/Helm (for deployment testing)
 
 ### Installation
@@ -109,13 +109,13 @@ NOTEBOOKLM_HEADLESS=true uv run notebooklm-mcp
 NOTEBOOKLM_HEADLESS=false uv run notebooklm-mcp
 ```
 
-### Docker Testing
+### Podman Testing
 ```bash
 # Build image
-docker build -t notebooklm-mcp:test .
+podman build -t notebooklm-mcp:test .
 
 # Run container
-docker-compose up
+podman-compose up
 ```
 
 ### Helm Testing
@@ -180,7 +180,7 @@ async def list_notebooks() -> List[Dict[str, str]]:
 - Reference issues in commits (e.g., `fixes #123`)
 - Keep commits focused and atomic
 
-### Docker
+### Podman/Containerfile
 - Optimize for image size
 - Use multi-stage builds
 - Follow security best practices

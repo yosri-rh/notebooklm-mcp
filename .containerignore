@@ -72,7 +72,7 @@ CLAUDE.md
 # Helm (if you don't want in image)
 helm/
 
-# Docker
-Dockerfile
-.dockerignore
-docker-compose.yml
+# Container files
+Containerfile
+.containerignore
+podman-compose.yml

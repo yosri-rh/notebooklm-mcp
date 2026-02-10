@@ -1,4 +1,4 @@
-name: Docker Build and Publish
+name: Container Build and Publish
 
 on:
   push:
@@ -38,7 +38,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract Docker metadata
+      - name: Extract container metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -51,7 +51,7 @@ jobs:
             type=semver,pattern={{major}}
             type=sha,prefix={{branch}}-
 
-      - name: Build and push Docker image
+      - name: Build and push container image
         id: build-and-push
         uses: docker/build-push-action@v5
         with:

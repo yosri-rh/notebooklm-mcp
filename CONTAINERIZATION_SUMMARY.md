@@ -10,7 +10,7 @@ This document summarizes all the work done to containerize, create Helm charts, 
 
 ### 1. Container Infrastructure
 
-#### Dockerfile (`Dockerfile`)
+#### Podmanfile (`Podmanfile`)
 - ✅ Multi-stage build for optimized image size
 - ✅ Python 3.12 slim base image
 - ✅ Full Playwright/Chromium support with all dependencies
@@ -20,14 +20,14 @@ This document summarizes all the work done to containerize, create Helm charts, 
 - ✅ Environment variables for configuration
 - ✅ Optimized for both AMD64 and ARM64 architectures
 
-#### Docker Compose (`docker-compose.yml`)
+#### Podman Compose (`podman-compose.yml`)
 - ✅ Easy local development setup
 - ✅ Volume management for persistent data
 - ✅ Resource limits configured
 - ✅ Restart policies
 - ✅ Logging configuration
 
-#### .dockerignore (`.dockerignore`)
+#### .podmanignore (`.podmanignore`)
 - ✅ Optimized build context
 - ✅ Excludes unnecessary files
 - ✅ Reduces image size
@@ -65,7 +65,7 @@ This document summarizes all the work done to containerize, create Helm charts, 
 
 ### 3. CI/CD Pipeline (`.github/workflows/`)
 
-#### Docker Build & Publish (`docker-publish.yml`)
+#### Podman Build & Publish (`podman-publish.yml`)
 - ✅ Builds on push to main/develop
 - ✅ Builds on tags (releases)
 - ✅ Multi-architecture support (AMD64, ARM64)
@@ -79,7 +79,7 @@ This document summarizes all the work done to containerize, create Helm charts, 
 - ✅ Tests multiple Python versions (3.10, 3.11, 3.12)
 - ✅ Linting with ruff
 - ✅ Type checking with mypy
-- ✅ Docker build testing
+- ✅ Podman build testing
 - ✅ Helm chart linting and validation
 - ✅ Package import verification
 
@@ -115,18 +115,18 @@ This document summarizes all the work done to containerize, create Helm charts, 
 
 ## 🚀 Quick Start Guide
 
-### Using Docker
+### Using Podman
 
 ```bash
 # Clone the repository
 git clone https://github.com/yourusername/notebooklm-mcp.git
 cd notebooklm-mcp
 
-# Start with Docker Compose
-docker-compose up -d
+# Start with Podman Compose
+podman-compose up -d
 
 # Authenticate
-docker exec -it notebooklm-mcp /bin/bash
+podman exec -it notebooklm-mcp /bin/bash
 uv run python scripts/setup_auth.py
 ```
 
@@ -151,10 +151,10 @@ uv run python scripts/setup_auth.py
 
 ```bash
 # Pull from GitHub Container Registry
-docker pull ghcr.io/yourusername/notebooklm-mcp:latest
+podman pull ghcr.io/yourusername/notebooklm-mcp:latest
 
 # Run it
-docker run -d \
+podman run -d \
   --name notebooklm-mcp \
   -v notebooklm-data:/app/chrome-user-data \
   ghcr.io/yourusername/notebooklm-mcp:latest
@@ -169,7 +169,7 @@ notebooklm-mcp/
 ├── .github/
 │   ├── workflows/
 │   │   ├── ci.yml                    # CI pipeline
-│   │   ├── docker-publish.yml        # Docker build/push
+│   │   ├── podman-publish.yml        # Podman build/push
 │   │   └── release.yml               # Release automation
 │   ├── ISSUE_TEMPLATE/
 │   │   ├── bug_report.md
@@ -198,9 +198,9 @@ notebooklm-mcp/
 │       └── utils.py
 ├── scripts/
 │   └── setup_auth.py
-├── Dockerfile                         # Multi-stage Docker build
-├── docker-compose.yml                 # Docker Compose config
-├── .dockerignore                      # Docker build exclusions
+├── Podmanfile                         # Multi-stage Podman build
+├── podman-compose.yml                 # Podman Compose config
+├── .podmanignore                      # Podman build exclusions
 ├── .gitignore                         # Git exclusions
 ├── pyproject.toml                     # Python project config
 ├── uv.lock                            # Locked dependencies
@@ -216,7 +216,7 @@ notebooklm-mcp/
 
 ## 🔧 Configuration Options
 
-### Docker Environment Variables
+### Podman Environment Variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -298,7 +298,7 @@ git tag v0.1.0
 git push origin v0.1.0
 
 # GitHub Actions will automatically:
-# - Build multi-arch Docker images
+# - Build multi-arch Podman images
 # - Push to ghcr.io
 # - Create GitHub release
 # - Package Helm chart
@@ -328,7 +328,7 @@ PR Created
 Run CI Tests
     ├── Lint (Python, Helm)
     ├── Type Check
-    ├── Build Docker Image
+    ├── Build Podman Image
     └── Helm Chart Validation
     ↓
 All Checks Pass → Ready to Merge
@@ -340,7 +340,7 @@ Push to Main
     ↓
 Run CI Tests
     ↓
-Build Docker Images
+Build Podman Images
     ├── AMD64
     └── ARM64
     ↓
@@ -427,7 +427,7 @@ Before deploying to production:
 
 Your NotebookLM MCP Server is now:
 
-✅ **Containerized** - Production-ready Docker image
+✅ **Containerized** - Production-ready Podman image
 ✅ **Kubernetes-Ready** - Complete Helm chart
 ✅ **CI/CD Enabled** - Automated builds and releases
 ✅ **GitHub-Ready** - Templates, docs, and workflows
@@ -439,7 +439,7 @@ Your NotebookLM MCP Server is now:
 ## 🚀 Deploy and Enjoy!
 
 The project is ready for:
-- Personal use with Docker
+- Personal use with Podman
 - Team deployments with Kubernetes
 - Open source collaboration on GitHub
 - Production workloads (with proper authentication setup)

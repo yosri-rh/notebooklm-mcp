@@ -4,7 +4,7 @@ services:
   notebooklm-mcp:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Containerfile
     image: notebooklm-mcp:latest
     container_name: notebooklm-mcp
 

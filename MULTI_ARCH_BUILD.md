@@ -27,7 +27,7 @@
 ## Why It Works
 
 ### 1. Base Images
-```dockerfile
+```containerfile
 FROM python:3.12-slim
 ```
 - Official Python images are multi-arch
@@ -52,7 +52,7 @@ uv run playwright install chromium
 
 ### 4. System Dependencies
 All Chromium dependencies are standard Debian packages:
-```dockerfile
+```containerfile
 RUN apt-get install -y libnss3 libnspr4 libatk1.0-0 ...
 ```
 - Available in Debian repos for all architectures
@@ -108,14 +108,14 @@ podman manifest add notebooklm-mcp:latest notebooklm-mcp:amd64
 podman manifest push notebooklm-mcp:latest docker://ghcr.io/yourusername/notebooklm-mcp:latest
 ```
 
-#### Using Docker Buildx
+#### Using Podman Buildx
 
 ```bash
 # Create and use buildx builder
-docker buildx create --name multiarch --use
+podman buildx create --name multiarch --use
 
 # Build and push multi-arch image in one command
-docker buildx build \
+podman buildx build \
   --platform linux/amd64,linux/arm64 \
   -t ghcr.io/yourusername/notebooklm-mcp:latest \
   --push \
@@ -127,7 +127,7 @@ docker buildx build \
 See `.github/workflows/docker-publish.yml` - already configured for multi-arch!
 
 ```yaml
-- name: Build and push Docker image
+- name: Build and push Podman image
   uses: docker/build-push-action@v5
   with:
     platforms: linux/amd64,linux/arm64
@@ -243,7 +243,7 @@ spec:
   tags:
   - name: latest
     from:
-      kind: DockerImage
+      kind: PodmanImage
       name: ghcr.io/yourusername/notebooklm-mcp:latest
     importPolicy:
       scheduled: true
@@ -273,7 +273,7 @@ All major registries support multi-arch manifests:
 | Registry | Multi-Arch Support | Notes |
 |----------|-------------------|-------|
 | **GitHub Container Registry** | ✅ | ghcr.io |
-| **Docker Hub** | ✅ | docker.io |
+| **Podman Hub** | ✅ | docker.io |
 | **Quay.io** | ✅ | quay.io |
 | **OpenShift Registry** | ✅ | Built-in support |
 | **AWS ECR** | ✅ | Amazon container registry |
@@ -351,7 +351,7 @@ podman run --rm notebooklm-mcp uname -m
 ✅ **The NotebookLM MCP container is fully multi-architecture compatible**
 
 - **Works on**: Apple Silicon Macs, Intel/AMD servers, AWS Graviton, and more
-- **No code changes needed**: Dockerfile already supports both architectures
+- **No code changes needed**: Podmanfile already supports both architectures
 - **Playwright/Chromium**: Automatically downloads correct binaries
 - **OpenShift**: Deploys seamlessly on heterogeneous clusters
 - **CI/CD**: GitHub Actions already configured for multi-arch builds
