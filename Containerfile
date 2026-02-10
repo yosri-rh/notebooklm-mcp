@@ -55,12 +55,12 @@ RUN apt-get update && apt-get install -y \
     xdg-utils \
     && rm -rf /var/lib/apt/lists/*
 
-# Install uv in runtime stage
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-ENV PATH="/root/.local/bin:$PATH"
-
 # Create non-root user for security
 RUN groupadd -r notebooklm && useradd -r -g notebooklm notebooklm
+
+# Install uv in runtime stage (as root, accessible to all)
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.local/bin:$PATH"
 
 # Set working directory
 WORKDIR /app
@@ -86,7 +86,8 @@ USER notebooklm
 # Environment variables
 ENV PYTHONUNBUFFERED=1 \
     NOTEBOOKLM_HEADLESS=true \
-    LOG_LEVEL=INFO
+    LOG_LEVEL=INFO \
+    PATH="/app/.venv/bin:$PATH"
 
 # Expose port (if needed for health checks)
 EXPOSE 8080
@@ -95,5 +96,5 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD python -c "import sys; sys.exit(0)"
 
-# Set entrypoint
-ENTRYPOINT ["uv", "run", "notebooklm-mcp"]
+# Set entrypoint - use .venv python directly
+ENTRYPOINT ["/app/.venv/bin/python", "-m", "notebooklm_mcp.server"]
