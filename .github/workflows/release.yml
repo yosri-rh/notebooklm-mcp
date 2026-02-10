@@ -42,11 +42,11 @@ jobs:
 
             ${{ steps.changelog.outputs.CHANGELOG }}
 
-            ## Docker Images
+            ## Container Images
 
             ```bash
-            docker pull ghcr.io/${{ github.repository }}:${{ github.ref_name }}
-            docker pull ghcr.io/${{ github.repository }}:latest
+            podman pull ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+            podman pull ghcr.io/${{ github.repository }}:latest
             ```
 
             ## Helm Chart

@@ -8,7 +8,7 @@ set -e
 IMAGE_NAME="${IMAGE_NAME:-notebooklm-mcp}"
 IMAGE_TAG="${IMAGE_TAG:-latest}"
 REGISTRY="${REGISTRY:-ghcr.io/yourusername}"
-BUILD_TOOL="${BUILD_TOOL:-podman}"  # podman or docker
+BUILD_TOOL="${BUILD_TOOL:-podman}"  # podman only (docker support removed)
 
 # Colors for output
 RED='\033[0;31m'
@@ -63,7 +63,7 @@ build_single_arch() {
     ${BUILD_TOOL} build \
         --platform ${platform} \
         -t ${IMAGE_NAME}:${arch_tag} \
-        -f Dockerfile \
+        -f Containerfile \
         .
 
     log_success "Built ${IMAGE_NAME}:${arch_tag}"
@@ -175,7 +175,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --image NAME      Image name (default: notebooklm-mcp)"
             echo "  --tag TAG         Image tag (default: latest)"
             echo "  --registry REG    Container registry (default: ghcr.io/yourusername)"
-            echo "  --tool TOOL       Build tool: podman or docker (default: podman)"
+            echo "  --tool TOOL       Build tool: podman only (default: podman)"
             echo "  --help            Show this help message"
             echo ""
             echo "Environment variables:"

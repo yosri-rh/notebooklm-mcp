@@ -17,7 +17,7 @@ Connects Claude AI to Google NotebookLM through an MCP (Model Context Protocol) 
 
 ### Target Platforms
 ✅ Local development (macOS, Linux, Windows)
-✅ Docker & Docker Compose
+✅ Podman & Podman Compose
 ✅ Kubernetes (any distribution)
 ✅ **Red Hat OpenShift Container Platform 4.19**
 
@@ -37,10 +37,10 @@ notebooklm-mcp/
 │   └── scripts/
 │       └── setup_auth.py       # Google authentication
 │
-├── 🐳 Docker Configuration
-│   ├── Dockerfile              # Multi-stage production build
-│   ├── docker-compose.yml      # Local development
-│   └── .dockerignore          # Build optimization
+├── 🐳 Podman Configuration
+│   ├── Podmanfile              # Multi-stage production build
+│   ├── podman-compose.yml      # Local development
+│   └── .podmanignore          # Build optimization
 │
 ├── ☸️ Kubernetes (Standard)
 │   └── helm/notebooklm-mcp/
@@ -65,7 +65,7 @@ notebooklm-mcp/
 │
 ├── 🔄 CI/CD
 │   └── .github/workflows/
-│       ├── docker-publish.yml  # Build & push images
+│       ├── podman-publish.yml  # Build & push images
 │       ├── ci.yml              # Testing & validation
 │       └── release.yml         # Automated releases
 │
@@ -75,7 +75,7 @@ notebooklm-mcp/
 │   ├── LICENSE                         # MIT License
 │   ├── SECURITY.md                     # Security policy
 │   │
-│   ├── 🐳 Docker & Kubernetes
+│   ├── 🐳 Podman & Kubernetes
 │   ├── CONTAINERIZATION_SUMMARY.md     # Container overview
 │   ├── README_DEPLOYMENT.md            # K8s deployment guide
 │   ├── QUICK_REFERENCE.md              # Command cheat sheet
@@ -118,7 +118,7 @@ notebooklm-mcp/
 
 ### 2. Containerized Application ✅
 
-**Docker Features:**
+**Podman Features:**
 - Multi-stage build (optimized size)
 - Python 3.12 slim base
 - Full Playwright/Chromium support
@@ -126,7 +126,7 @@ notebooklm-mcp/
 - Health checks
 - Multi-architecture (AMD64/ARM64)
 
-**Docker Compose:**
+**Podman Compose:**
 - One-command local setup
 - Persistent volumes
 - Resource limits
@@ -169,10 +169,10 @@ notebooklm-mcp/
 1. **CI Pipeline** (`ci.yml`)
    - Tests Python 3.10, 3.11, 3.12
    - Linting & type checking
-   - Docker build verification
+   - Podman build verification
    - Helm chart validation
 
-2. **Docker Publish** (`docker-publish.yml`)
+2. **Podman Publish** (`podman-publish.yml`)
    - Multi-arch builds (AMD64/ARM64)
    - Push to ghcr.io
    - Automatic tagging
@@ -189,7 +189,7 @@ notebooklm-mcp/
 
 **User Guides:**
 - Main README with quick start
-- Docker deployment guide
+- Podman deployment guide
 - Kubernetes deployment guide
 - OpenShift deployment guide (4.19-specific)
 
@@ -199,7 +199,7 @@ notebooklm-mcp/
 - Code of conduct (implicit)
 
 **Quick References:**
-- Docker commands
+- Podman commands
 - kubectl commands
 - oc commands
 - Helm operations
@@ -259,17 +259,17 @@ uv run python scripts/setup_auth.py
 uv run notebooklm-mcp
 ```
 
-### Docker
+### Podman
 
 ```bash
-# Start with Docker Compose
-docker-compose up -d
+# Start with Podman Compose
+podman-compose up -d
 
 # Authenticate
-docker exec -it notebooklm-mcp uv run python scripts/setup_auth.py
+podman exec -it notebooklm-mcp uv run python scripts/setup_auth.py
 
 # View logs
-docker-compose logs -f
+podman-compose logs -f
 ```
 
 ### Kubernetes with Helm
@@ -395,7 +395,7 @@ audio = generate_audio_overview(
 ## 📈 Statistics
 
 ### Code
-- **Languages:** Python 3.12, YAML, Dockerfile, Shell
+- **Languages:** Python 3.12, YAML, Podmanfile, Shell
 - **Lines of Code:** ~3,500+
 - **Tests:** Integration tests (manual)
 - **Dependencies:** 86 packages
@@ -430,7 +430,7 @@ PR Created
   ↓
 Lint & Test (Python 3.10, 3.11, 3.12)
   ↓
-Build Docker Image (test)
+Build Podman Image (test)
   ↓
 Validate Helm Charts
   ↓
@@ -480,7 +480,7 @@ Create GitHub Release
 - [x] Logging configured
 
 ### Containerization
-- [x] Dockerfile optimized
+- [x] Podmanfile optimized
 - [x] Multi-stage build
 - [x] Security hardened
 - [x] Health checks
@@ -508,7 +508,7 @@ Create GitHub Release
 ### CI/CD
 - [x] GitHub Actions workflows
 - [x] Automated testing
-- [x] Docker image builds
+- [x] Podman image builds
 - [x] Helm chart validation
 - [x] Release automation
 - [x] Multi-arch builds
@@ -637,7 +637,7 @@ MIT License - See [LICENSE](LICENSE) file.
 
 ### Deployment Platforms
 ✅ Local (macOS, Linux, Windows)
-✅ Docker & Docker Compose
+✅ Podman & Podman Compose
 ✅ Kubernetes (tested)
 ✅ Red Hat OpenShift 4.19 (certified)
 
@@ -651,7 +651,7 @@ MIT License - See [LICENSE](LICENSE) file.
 ✅ Comprehensive documentation
 
 ### Code Quality
-✅ Multi-stage Docker builds
+✅ Multi-stage Podman builds
 ✅ Security hardened
 ✅ Production-ready defaults
 ✅ Monitoring integrated
@@ -682,9 +682,9 @@ MIT License - See [LICENSE](LICENSE) file.
 
 **Total Development Time:** Comprehensive containerization, OpenShift adaptation, and documentation complete.
 
-**Lines of Configuration:** 2000+ lines of YAML, Docker, and documentation.
+**Lines of Configuration:** 2000+ lines of YAML, Podman, and documentation.
 
-**Platforms Supported:** 4 (Local, Docker, K8s, OpenShift)
+**Platforms Supported:** 4 (Local, Podman, K8s, OpenShift)
 
 ---
 

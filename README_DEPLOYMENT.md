@@ -1,10 +1,10 @@
 # NotebookLM MCP Server - Deployment Guide
 
-Complete guide for deploying NotebookLM MCP Server using Docker and Kubernetes.
+Complete guide for deploying NotebookLM MCP Server using Podman and Kubernetes.
 
 ## Table of Contents
 - [Quick Start](#quick-start)
-- [Docker Deployment](#docker-deployment)
+- [Podman Deployment](#podman-deployment)
 - [Kubernetes Deployment](#kubernetes-deployment)
 - [Configuration](#configuration)
 - [Authentication](#authentication)
@@ -13,11 +13,11 @@ Complete guide for deploying NotebookLM MCP Server using Docker and Kubernetes.
 ## Quick Start
 
 ### Prerequisites
-- Docker or Kubernetes cluster
+- Podman or Kubernetes cluster
 - Google account with NotebookLM access
 - (Optional) Helm 3.x for Kubernetes deployment
 
-## Docker Deployment
+## Podman Deployment
 
 ### 1. Build the Image
 
@@ -26,31 +26,31 @@ Complete guide for deploying NotebookLM MCP Server using Docker and Kubernetes.
 git clone https://github.com/yourusername/notebooklm-mcp.git
 cd notebooklm-mcp
 
-# Build the Docker image
-docker build -t notebooklm-mcp:latest .
+# Build the Podman image
+podman build -t notebooklm-mcp:latest .
 ```
 
-### 2. Run with Docker Compose
+### 2. Run with Podman Compose
 
 ```bash
 # Start the service
-docker-compose up -d
+podman-compose up -d
 
 # View logs
-docker-compose logs -f
+podman-compose logs -f
 
 # Stop the service
-docker-compose down
+podman-compose down
 ```
 
-### 3. Run with Docker CLI
+### 3. Run with Podman CLI
 
 ```bash
 # Create a volume for persistent data
-docker volume create notebooklm-chrome-data
+podman volume create notebooklm-chrome-data
 
 # Run the container
-docker run -d \
+podman run -d \
   --name notebooklm-mcp \
   --restart unless-stopped \
   -e NOTEBOOKLM_HEADLESS=true \
@@ -59,14 +59,14 @@ docker run -d \
   notebooklm-mcp:latest
 
 # View logs
-docker logs -f notebooklm-mcp
+podman logs -f notebooklm-mcp
 ```
 
 ### 4. Authenticate
 
 ```bash
 # Exec into the container
-docker exec -it notebooklm-mcp /bin/bash
+podman exec -it notebooklm-mcp /bin/bash
 
 # Run authentication setup
 uv run python scripts/setup_auth.py
@@ -76,10 +76,10 @@ uv run python scripts/setup_auth.py
 
 ```bash
 # Pull from GitHub Container Registry
-docker pull ghcr.io/yourusername/notebooklm-mcp:latest
+podman pull ghcr.io/yourusername/notebooklm-mcp:latest
 
 # Run it
-docker run -d \
+podman run -d \
   --name notebooklm-mcp \
   -v notebooklm-chrome-data:/app/chrome-user-data \
   ghcr.io/yourusername/notebooklm-mcp:latest
@@ -271,7 +271,7 @@ kubectl describe pod -l app=notebooklm-mcp -n notebooklm-mcp
 
 The Chrome user data (authentication) needs to be persisted:
 
-- **Docker**: Use named volumes or bind mounts
+- **Podman**: Use named volumes or bind mounts
 - **Kubernetes**: Use PersistentVolumeClaims (PVC)
 
 Recommended storage sizes:
@@ -285,15 +285,15 @@ Recommended storage sizes:
 
 Authentication must be done once per deployment:
 
-#### Docker
+#### Podman
 
 ```bash
 # Method 1: Exec into container
-docker exec -it notebooklm-mcp /bin/bash
+podman exec -it notebooklm-mcp /bin/bash
 uv run python scripts/setup_auth.py
 
 # Method 2: Run with host network for easier auth
-docker run -it --rm \
+podman run -it --rm \
   --network host \
   -e NOTEBOOKLM_HEADLESS=false \
   -v $(pwd)/chrome-user-data:/app/chrome-user-data \
@@ -384,8 +384,8 @@ readinessProbe:
 View logs:
 
 ```bash
-# Docker
-docker logs -f notebooklm-mcp
+# Podman
+podman logs -f notebooklm-mcp
 
 # Kubernetes
 kubectl logs -f deployment/notebooklm-mcp -n notebooklm-mcp
@@ -402,17 +402,17 @@ kubectl logs -f -l app.kubernetes.io/name=notebooklm-mcp
 
 ```bash
 # Check if chrome-user-data is empty
-docker exec notebooklm-mcp ls -la /app/chrome-user-data
+podman exec notebooklm-mcp ls -la /app/chrome-user-data
 
 # Re-run authentication
-docker exec -it notebooklm-mcp uv run python scripts/setup_auth.py
+podman exec -it notebooklm-mcp uv run python scripts/setup_auth.py
 ```
 
 #### 2. Container Crashes
 
 ```bash
 # Check logs
-docker logs notebooklm-mcp
+podman logs notebooklm-mcp
 
 # Common causes:
 # - Insufficient memory (increase to 2Gi)
@@ -424,7 +424,7 @@ docker logs notebooklm-mcp
 
 ```bash
 # Run with visible browser for debugging
-docker run -it --rm \
+podman run -it --rm \
   -e NOTEBOOKLM_HEADLESS=false \
   -e DISPLAY=$DISPLAY \
   -v /tmp/.X11-unix:/tmp/.X11-unix \
@@ -449,8 +449,8 @@ kubectl describe node
 Enable debug logging:
 
 ```bash
-# Docker
-docker run -e LOG_LEVEL=DEBUG notebooklm-mcp:latest
+# Podman
+podman run -e LOG_LEVEL=DEBUG notebooklm-mcp:latest
 
 # Kubernetes
 kubectl set env deployment/notebooklm-mcp LOG_LEVEL=DEBUG -n notebooklm-mcp

@@ -2,45 +2,45 @@
 
 Fast command reference for common tasks.
 
-## Docker Commands
+## Podman Commands
 
 ### Build & Run
 
 ```bash
 # Build image
-docker build -t notebooklm-mcp:latest .
+podman build -t notebooklm-mcp:latest .
 
 # Run with Docker Compose
-docker-compose up -d
+podman-compose up -d
 
 # Run standalone
-docker run -d --name notebooklm-mcp \
+podman run -d --name notebooklm-mcp \
   -v notebooklm-data:/app/chrome-user-data \
   notebooklm-mcp:latest
 
 # Stop
-docker-compose down
+podman-compose down
 # or
-docker stop notebooklm-mcp
+podman stop notebooklm-mcp
 ```
 
 ### Manage
 
 ```bash
 # View logs
-docker logs -f notebooklm-mcp
+podman logs -f notebooklm-mcp
 
 # Exec into container
-docker exec -it notebooklm-mcp /bin/bash
+podman exec -it notebooklm-mcp /bin/bash
 
 # Authenticate
-docker exec -it notebooklm-mcp uv run python scripts/setup_auth.py
+podman exec -it notebooklm-mcp uv run python scripts/setup_auth.py
 
 # Restart
-docker restart notebooklm-mcp
+podman restart notebooklm-mcp
 
 # Remove
-docker rm -f notebooklm-mcp
+podman rm -f notebooklm-mcp
 ```
 
 ## Kubernetes Commands
@@ -203,7 +203,7 @@ gh run view --log
 
 ```bash
 # Check Docker logs
-docker logs notebooklm-mcp --tail 100
+podman logs notebooklm-mcp --tail 100
 
 # Check Kubernetes events
 kubectl get events --sort-by='.lastTimestamp' | grep notebooklm
@@ -218,7 +218,7 @@ kubectl get pvc
 kubectl port-forward deployment/notebooklm-mcp 8080:8080
 
 # Check resource usage
-docker stats notebooklm-mcp
+podman stats notebooklm-mcp
 # or
 kubectl top pod -l app.kubernetes.io/name=notebooklm-mcp
 
@@ -230,47 +230,47 @@ kubectl rollout restart deployment/notebooklm-mcp
 
 ```bash
 # Pull from registry
-docker pull ghcr.io/username/notebooklm-mcp:latest
+podman pull ghcr.io/username/notebooklm-mcp:latest
 
 # Tag image
-docker tag notebooklm-mcp:latest ghcr.io/username/notebooklm-mcp:v1.0.0
+podman tag notebooklm-mcp:latest ghcr.io/username/notebooklm-mcp:v1.0.0
 
 # Push to registry
-docker push ghcr.io/username/notebooklm-mcp:v1.0.0
+podman push ghcr.io/username/notebooklm-mcp:v1.0.0
 
 # List local images
-docker images | grep notebooklm
+podman images | grep notebooklm
 
 # Remove image
-docker rmi notebooklm-mcp:latest
+podman rmi notebooklm-mcp:latest
 
 # Prune unused images
-docker image prune -a
+podman image prune -a
 ```
 
 ## Volume Management
 
 ```bash
 # List volumes
-docker volume ls
+podman volume ls
 
 # Inspect volume
-docker volume inspect notebooklm-chrome-data
+podman volume inspect notebooklm-chrome-data
 
 # Create volume
-docker volume create notebooklm-chrome-data
+podman volume create notebooklm-chrome-data
 
 # Remove volume
-docker volume rm notebooklm-chrome-data
+podman volume rm notebooklm-chrome-data
 
 # Backup volume
-docker run --rm \
+podman run --rm \
   -v notebooklm-chrome-data:/data \
   -v $(pwd):/backup \
   alpine tar czf /backup/chrome-data-backup.tar.gz /data
 
 # Restore volume
-docker run --rm \
+podman run --rm \
   -v notebooklm-chrome-data:/data \
   -v $(pwd):/backup \
   alpine tar xzf /backup/chrome-data-backup.tar.gz -C /
@@ -280,50 +280,50 @@ docker run --rm \
 
 ```bash
 # Docker stats
-docker stats notebooklm-mcp
+podman stats notebooklm-mcp
 
 # Kubernetes metrics
 kubectl top pod -l app.kubernetes.io/name=notebooklm-mcp
 kubectl top node
 
 # Stream logs
-docker logs -f notebooklm-mcp
+podman logs -f notebooklm-mcp
 # or
 kubectl logs -f deployment/notebooklm-mcp --tail=100
 
 # Check health
-docker inspect --format='{{.State.Health.Status}}' notebooklm-mcp
+podman inspect --format='{{.State.Health.Status}}' notebooklm-mcp
 ```
 
 ## Quick Debugging
 
 ```bash
 # Run container interactively
-docker run -it --rm notebooklm-mcp:latest /bin/bash
+podman run -it --rm notebooklm-mcp:latest /bin/bash
 
 # Check if Chromium works
-docker run --rm notebooklm-mcp:latest uv run playwright --version
+podman run --rm notebooklm-mcp:latest uv run playwright --version
 
 # Test Python imports
-docker run --rm notebooklm-mcp:latest \
+podman run --rm notebooklm-mcp:latest \
   uv run python -c "from src.notebooklm_mcp import server; print('OK')"
 
 # Check environment
-docker run --rm notebooklm-mcp:latest env | grep NOTEBOOKLM
+podman run --rm notebooklm-mcp:latest env | grep NOTEBOOKLM
 ```
 
 ## Cleanup
 
 ```bash
 # Stop and remove everything (Docker)
-docker-compose down -v
+podman-compose down -v
 
 # Remove Helm release and PVC
 helm uninstall notebooklm-mcp
 kubectl delete pvc -l app.kubernetes.io/name=notebooklm-mcp
 
 # Prune Docker system
-docker system prune -a --volumes
+podman system prune -a --volumes
 
 # Delete namespace (K8s)
 kubectl delete namespace notebooklm-mcp
@@ -333,7 +333,7 @@ kubectl delete namespace notebooklm-mcp
 
 ```bash
 # Docker
-docker run -e NOTEBOOKLM_HEADLESS=false \
+podman run -e NOTEBOOKLM_HEADLESS=false \
   -e LOG_LEVEL=DEBUG \
   notebooklm-mcp:latest
 
@@ -349,7 +349,7 @@ echo "LOG_LEVEL=INFO" >> .env
 
 ```bash
 # Issue: Authentication expired
-docker exec -it notebooklm-mcp uv run python scripts/setup_auth.py
+podman exec -it notebooklm-mcp uv run python scripts/setup_auth.py
 
 # Issue: Pod crash loop
 kubectl describe pod -l app.kubernetes.io/name=notebooklm-mcp
@@ -363,7 +363,7 @@ kubectl describe pvc notebooklm-mcp
 kubectl describe pod -l app.kubernetes.io/name=notebooklm-mcp | grep -A 5 Events
 
 # Issue: Out of memory
-# Increase memory limit in values.yaml or docker-compose.yml
+# Increase memory limit in values.yaml or podman-compose.yml
 resources:
   limits:
     memory: 4Gi  # Increase from 2Gi
@@ -373,7 +373,7 @@ resources:
 
 ## Cheat Sheet URLs
 
-- Docker Docs: https://docs.docker.com
+- Podman Docs: https://docs.podman.io
 - Kubernetes Docs: https://kubernetes.io/docs
 - Helm Docs: https://helm.sh/docs
 - GitHub Actions: https://docs.github.com/en/actions

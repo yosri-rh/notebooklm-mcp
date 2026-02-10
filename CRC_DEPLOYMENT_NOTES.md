@@ -30,7 +30,7 @@
      - Proper storage class configuration
 
 4. **Image Build (Local)**
-   - ✅ Fixed Dockerfile PATH issue for `uv` installation
+   - ✅ Fixed Containerfile PATH issue for `uv` installation
    - ✅ Fixed `pyproject.toml` to specify package location
    - ✅ Successfully built image with podman locally
    - ✅ Image tagged: `localhost/notebooklm-mcp:latest`
@@ -90,7 +90,7 @@ autoscaling:
 Use a pre-built image from an external registry:
 
 ```bash
-# Pull from GitHub Container Registry or Docker Hub
+# Pull from GitHub Container Registry or Container Registry
 helm install notebooklm-mcp ./helm/notebooklm-mcp-openshift \
   --set image.repository=ghcr.io/yourusername/notebooklm-mcp \
   --set image.tag=latest \
@@ -256,7 +256,7 @@ While we couldn't complete the full deployment on CRC due to resource constraint
 
 ## Files Modified/Created
 
-- `Dockerfile` - Fixed uv PATH issue
+- `Containerfile` - Fixed uv PATH issue
 - `pyproject.toml` - Added hatch build configuration
 - `values-crc.yaml` - CRC-optimized Helm values
 - BuildConfig and ImageStream created in OpenShift

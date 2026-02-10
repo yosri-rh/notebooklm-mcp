@@ -23,7 +23,7 @@ spec:
     type: {{ .Values.buildConfig.strategy | title }}
     {{- if eq .Values.buildConfig.strategy "docker" }}
     dockerStrategy:
-      dockerfilePath: Dockerfile
+      dockerfilePath: Containerfile
       noCache: false
       forcePull: false
       env:
