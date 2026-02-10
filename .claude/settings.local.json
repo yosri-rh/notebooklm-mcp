@@ -22,7 +22,8 @@
       "Bash(oc exec:*)",
       "Bash(podman:*)",
       "Bash(podman info:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

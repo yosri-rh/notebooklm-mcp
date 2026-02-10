@@ -24,12 +24,12 @@ Perfect! ✅ The NotebookLM MCP server is now fully installed and ready to use. 
   1. Authenticate with Google
 
   Run the authentication setup script:
-  cd /Users/ybenmahf/Documents/mcp-learning/notebooklm-mcp
+  cd /path/to/notebooklm-mcp
   uv run python scripts/setup_auth.py
   This opens a browser where you sign in to Google and access NotebookLM.
 
   2. Test the MCP server
 
   # Test with MCP Inspector
-  npx @modelcontextprotocol/inspector uv --directory /Users/ybenmahf/Documents/mcp-learning/notebooklm-mcp run notebooklm-mcp
+  npx @modelcontextprotocol/inspector uv --directory /path/to/notebooklm-mcp run notebooklm-mcp
   

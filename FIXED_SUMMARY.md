@@ -55,7 +55,7 @@ uv run python test_final.py
 
 ### Test with MCP Inspector
 ```bash
-npx @modelcontextprotocol/inspector uv --directory /Users/ybenmahf/Documents/mcp-learning/notebooklm-mcp run notebooklm-mcp
+npx @modelcontextprotocol/inspector uv --directory /path/to/notebooklm-mcp run notebooklm-mcp
 ```
 
 Then in the inspector:
@@ -74,7 +74,7 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
       "command": "uv",
       "args": [
         "--directory",
-        "/Users/ybenmahf/Documents/mcp-learning/notebooklm-mcp",
+        "/path/to/notebooklm-mcp",
         "run",
         "notebooklm-mcp"
       ],

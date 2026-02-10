@@ -36,7 +36,7 @@ See [CONTAINERIZATION_SUMMARY.md](CONTAINERIZATION_SUMMARY.md) and [OPENSHIFT_SU
 ## Installation
 
 ```bash
-cd /Users/ybenmahf/Documents/mcp-learning/notebooklm-mcp
+cd /path/to/notebooklm-mcp
 
 # Install dependencies
 uv sync
@@ -83,7 +83,7 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
       "command": "uv",
       "args": [
         "--directory",
-        "/Users/ybenmahf/Documents/mcp-learning/notebooklm-mcp",
+        "/path/to/notebooklm-mcp",
         "run",
         "notebooklm-mcp"
       ],
@@ -102,7 +102,7 @@ Restart Claude Desktop after adding configuration.
 ### With MCP Inspector
 
 ```bash
-npx @modelcontextprotocol/inspector uv --directory /Users/ybenmahf/Documents/mcp-learning/notebooklm-mcp run notebooklm-mcp
+npx @modelcontextprotocol/inspector uv --directory /path/to/notebooklm-mcp run notebooklm-mcp
 ```
 
 ### Watch Browser Automation
