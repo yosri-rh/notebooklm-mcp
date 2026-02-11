@@ -2,6 +2,38 @@
 
 Complete guide for deploying NotebookLM MCP Server using Podman and Kubernetes.
 
+## ⚠️ Important Limitations
+
+**This deployment guide is EXPERIMENTAL** - containerized deployments face significant challenges:
+
+### Multi-User Authentication Problem
+
+- **No Official API**: Google NotebookLM doesn't provide a programmatic API
+- **Browser Automation**: Uses Playwright which requires browser sessions per user
+- **Google Account Sessions**: Each user needs isolated `chrome-user-data` with their Google credentials
+- **Single-User Design**: Each pod/container runs one Google account session
+- **Session Isolation**: Cannot easily share authentication between users
+
+### Recommended Use Cases
+
+✅ **Suitable For:**
+- Local testing with Podman (single user)
+- Development and debugging
+- Personal containerized environment
+- Learning Kubernetes/OpenShift deployment patterns
+
+❌ **NOT Recommended For:**
+- Multi-user production deployments
+- Shared team environments
+- Public-facing services
+- Enterprise use cases
+
+### Primary Use Case
+
+For production use, we recommend **local Python installation with Claude Desktop** integration. See the main [README.md](../README.md) for local setup instructions.
+
+---
+
 ## Table of Contents
 - [Quick Start](#quick-start)
 - [Podman Deployment](#podman-deployment)
