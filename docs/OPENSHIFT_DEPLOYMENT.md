@@ -2,6 +2,46 @@
 
 Complete deployment guide for Red Hat OpenShift Container Platform 4.19.
 
+## ⚠️ Important: Experimental Status
+
+**This OpenShift deployment is EXPERIMENTAL and NOT recommended for multi-user production use.**
+
+### Why Containerized Deployments Are Challenging
+
+Without an official NotebookLM API, this MCP server uses browser automation (Playwright + Chromium), which creates fundamental limitations:
+
+**Authentication Challenges:**
+- Each user requires their own Google account session
+- Browser sessions need isolated `chrome-user-data` directories
+- No programmatic way to handle Google OAuth in containers
+- Session management complexity for multiple users
+
+**Current Architecture Limitations:**
+- **One pod = One Google account** - Cannot support multiple users per pod
+- **Manual authentication** - Requires interactive Google login per pod
+- **Session persistence** - Depends on PersistentVolumes for chrome-user-data
+- **No multi-tenancy** - Each user would need dedicated pod resources
+
+### Recommended Use Cases
+
+✅ **Suitable For:**
+- OpenShift learning and experimentation
+- Testing Helm charts and operators
+- Single-user development environments
+- Understanding container deployment patterns
+
+❌ **NOT Recommended For:**
+- Multi-user team deployments
+- Production services
+- Shared organizational infrastructure
+- Public-facing applications
+
+### Alternative: Local Development
+
+For production use with Claude Desktop, see the [main README](../README.md) for local Python installation.
+
+---
+
 ## Table of Contents
 - [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)

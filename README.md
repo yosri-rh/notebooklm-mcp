@@ -1,8 +1,8 @@
 # NotebookLM MCP Server
 
-Connect Claude to Google NotebookLM using browser automation.
+Connect Claude Desktop to Google NotebookLM using browser automation.
 
-🐳 **Fully Containerized** | ☸️ **Kubernetes & OpenShift Ready** | 🔒 **Production Hardened**
+🖥️ **Local Development First** | 🐳 **Container Support** | 🧪 **Kubernetes/OpenShift Experimental**
 
 ## ⚠️ Important Notes
 
@@ -80,12 +80,45 @@ Reference: [NotebookLM Enterprise API Docs](https://docs.cloud.google.com/gemini
 
 ## 🚀 Deployment Options
 
-- **Local Development**: Run with Podman or Python
-- **Podman**: Containerized deployment
-- **Kubernetes**: Helm chart for standard Kubernetes
-- **OpenShift 4.19**: Optimized Helm chart with Routes, SCCs, and monitoring
+### Primary Use Case: Local Development
 
-See [CONTAINERIZATION_SUMMARY.md](CONTAINERIZATION_SUMMARY.md) and [OPENSHIFT_SUMMARY.md](OPENSHIFT_SUMMARY.md)
+This MCP server is **designed for local use with Claude Desktop**:
+
+- ✅ **Python (Recommended)**: Direct integration with Claude Desktop via stdio
+- ✅ **Podman Local**: Containerized testing on your local machine
+
+### Experimental: Containerized Deployments
+
+⚠️ **Multi-user deployments on Kubernetes/OpenShift are experimental** due to authentication challenges:
+
+- Each user needs their own Google account session
+- No official NotebookLM API for programmatic authentication
+- Browser automation (Playwright) is designed for single-user scenarios
+- Significant complexity for session isolation and management
+
+**Available for reference/experimentation:**
+- 🐳 **Podman**: Single-user containerized deployment
+- ☸️ **Kubernetes**: Helm chart (experimental, single-user per pod)
+- 🔴 **OpenShift**: Helm chart with Routes and SCCs (experimental, single-user per pod)
+
+See [CONTAINERIZATION_SUMMARY.md](CONTAINERIZATION_SUMMARY.md) and [OPENSHIFT_SUMMARY.md](OPENSHIFT_SUMMARY.md) for experimental deployment guides.
+
+## Quick Start (Local Development)
+
+```bash
+# 1. Install dependencies
+uv sync
+uv run playwright install chromium
+
+# 2. Authenticate with Google
+uv run python scripts/setup_auth.py
+
+# 3. Configure Claude Desktop
+# Add to ~/Library/Application Support/Claude/claude_desktop_config.json
+# See "Claude Desktop Integration" section below
+
+# 4. Restart Claude Desktop and start using NotebookLM tools!
+```
 
 ## Features
 
@@ -164,9 +197,11 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 Restart Claude Desktop after adding configuration.
 
-## HTTP Mode for Kubernetes/OpenShift
+## HTTP Mode for Container Deployments (Experimental)
 
-The MCP server supports HTTP transport for container deployments.
+⚠️ **Note**: HTTP mode is experimental and primarily for local container testing. Multi-user Kubernetes/OpenShift deployments face authentication challenges without an official NotebookLM API.
+
+The MCP server supports HTTP transport for containerized deployments.
 
 ### Running in HTTP Mode
 
