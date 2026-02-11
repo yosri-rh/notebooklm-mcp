@@ -80,11 +80,13 @@ spec:
           protocol: TCP
         {{- if .Values.livenessProbe.enabled }}
         livenessProbe:
+          {{- if .Values.livenessProbe.httpGet }}
+          httpGet:
+            {{- toYaml .Values.livenessProbe.httpGet | nindent 12 }}
+          {{- else if .Values.livenessProbe.exec }}
           exec:
-            command:
-            {{- range .Values.livenessProbe.exec.command }}
-            - {{ . }}
-            {{- end }}
+            {{- toYaml .Values.livenessProbe.exec | nindent 12 }}
+          {{- end }}
           initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
           timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
@@ -92,11 +94,13 @@ spec:
         {{- end }}
         {{- if .Values.readinessProbe.enabled }}
         readinessProbe:
+          {{- if .Values.readinessProbe.httpGet }}
+          httpGet:
+            {{- toYaml .Values.readinessProbe.httpGet | nindent 12 }}
+          {{- else if .Values.readinessProbe.exec }}
           exec:
-            command:
-            {{- range .Values.readinessProbe.exec.command }}
-            - {{ . }}
-            {{- end }}
+            {{- toYaml .Values.readinessProbe.exec | nindent 12 }}
+          {{- end }}
           initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
           timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}

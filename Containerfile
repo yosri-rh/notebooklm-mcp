@@ -94,7 +94,7 @@ EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD python -c "import sys; sys.exit(0)"
+    CMD curl -f http://localhost:8080/health || python -c "import sys; sys.exit(0)"
 
 # Set entrypoint - use .venv python directly
 ENTRYPOINT ["/app/.venv/bin/python", "-m", "notebooklm_mcp.server"]

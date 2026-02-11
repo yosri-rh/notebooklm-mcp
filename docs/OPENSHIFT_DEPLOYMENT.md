@@ -514,6 +514,49 @@ oc describe route notebooklm-mcp -n notebooklm-mcp
 curl -I https://$(oc get route notebooklm-mcp -o jsonpath='{.spec.host}')
 ```
 
+#### Testing HTTP Endpoints
+
+When running in HTTP mode (`MCP_TRANSPORT=streamable-http`), you can test the health endpoints via the Route:
+
+```bash
+# Get route URL
+ROUTE=$(oc get route notebooklm-mcp -o jsonpath='{.spec.host}')
+
+# Test health endpoint
+curl https://$ROUTE/health
+# Expected: {"status":"healthy","transport":"streamable-http","headless":true}
+
+# Test readiness endpoint
+curl https://$ROUTE/readiness
+# Expected: {"status":"ready","playwright":"available"}
+
+# Pretty print JSON response
+curl -s https://$ROUTE/health | jq .
+
+# Check from within the cluster (using service)
+oc run curl-test --image=curlimages/curl:latest --rm -it --restart=Never -- \
+  curl http://notebooklm-mcp:8080/health
+```
+
+#### Verifying Probes
+
+Check that Kubernetes probes are passing:
+
+```bash
+# Get pod name
+POD=$(oc get pod -l app.kubernetes.io/name=notebooklm-mcp-openshift -o jsonpath='{.items[0].metadata.name}')
+
+# Check probe status
+oc describe pod $POD | grep -A5 "Liveness\|Readiness"
+
+# Expected output:
+#   Liveness:   http-get http://:http/health delay=30s timeout=10s period=30s
+#   Readiness:  http-get http://:http/readiness delay=15s timeout=5s period=10s
+
+# Check events for probe failures
+oc get events --field-selector involvedObject.name=$POD | grep -i probe
+```
+
 ### Network Policies
 
 OpenShift uses OVN-Kubernetes for SDN.

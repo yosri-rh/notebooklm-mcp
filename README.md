@@ -164,6 +164,36 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 Restart Claude Desktop after adding configuration.
 
+## HTTP Mode for Kubernetes/OpenShift
+
+The MCP server supports HTTP transport for container deployments.
+
+### Running in HTTP Mode
+
+```bash
+export MCP_TRANSPORT=streamable-http
+uv run notebooklm-mcp
+```
+
+Server available at: http://localhost:8080/mcp
+
+### Health Check Endpoints
+
+- `GET /health` - Liveness probe
+- `GET /readiness` - Readiness probe
+
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| MCP_TRANSPORT | stdio | "stdio" or "streamable-http" |
+| MCP_HOST | 0.0.0.0 | HTTP bind address |
+| MCP_PORT | 8080 | HTTP port |
+
+For detailed deployment instructions, see:
+- [docs/README_DEPLOYMENT.md](docs/README_DEPLOYMENT.md) - Kubernetes deployment
+- [docs/OPENSHIFT_DEPLOYMENT.md](docs/OPENSHIFT_DEPLOYMENT.md) - OpenShift deployment
+
 ## Testing
 
 ### With MCP Inspector

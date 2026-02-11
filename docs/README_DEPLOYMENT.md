@@ -264,8 +264,90 @@ kubectl describe pod -l app=notebooklm-mcp -n notebooklm-mcp
 
 | Variable | Default | Description |
 |----------|---------|-------------|
+| `MCP_TRANSPORT` | `stdio` | Transport mode: "stdio" or "streamable-http" |
+| `MCP_HOST` | `0.0.0.0` | HTTP bind address (when using streamable-http) |
+| `MCP_PORT` | `8080` | HTTP port (when using streamable-http) |
 | `NOTEBOOKLM_HEADLESS` | `true` | Run browser in headless mode |
 | `LOG_LEVEL` | `INFO` | Logging level (DEBUG, INFO, WARNING, ERROR) |
+
+### HTTP Transport Mode
+
+The MCP server supports two transport modes:
+
+1. **stdio** (default): For local Claude Desktop usage
+2. **streamable-http**: For Kubernetes/OpenShift deployments
+
+#### Local Testing with HTTP Mode
+
+```bash
+# Run server in HTTP mode
+export MCP_TRANSPORT=streamable-http
+uv run notebooklm-mcp
+
+# Server will be available at http://localhost:8080/mcp
+```
+
+#### Health Check Endpoints
+
+When running in HTTP mode, these endpoints are available:
+
+- `GET /health` - Liveness probe (returns server status)
+- `GET /readiness` - Readiness probe (checks if Playwright is available)
+
+Test the endpoints:
+
+```bash
+# Check health
+curl http://localhost:8080/health
+# Expected: {"status":"healthy","transport":"streamable-http","headless":true}
+
+# Check readiness
+curl http://localhost:8080/readiness
+# Expected: {"status":"ready","playwright":"available"}
+```
+
+#### Kubernetes HTTP Configuration
+
+When deploying to Kubernetes, set the transport mode in your values file:
+
+```yaml
+# values-custom.yaml
+env:
+  MCP_TRANSPORT: "streamable-http"
+  MCP_HOST: "0.0.0.0"
+  MCP_PORT: "8080"
+  NOTEBOOKLM_HEADLESS: "true"
+  LOG_LEVEL: "INFO"
+
+# Enable service for HTTP access
+service:
+  enabled: true
+  type: ClusterIP
+  port: 8080
+
+# Use HTTP probes
+livenessProbe:
+  enabled: true
+  httpGet:
+    path: /health
+    port: http
+    scheme: HTTP
+  initialDelaySeconds: 30
+  periodSeconds: 30
+  timeoutSeconds: 10
+  failureThreshold: 3
+
+readinessProbe:
+  enabled: true
+  httpGet:
+    path: /readiness
+    port: http
+    scheme: HTTP
+  initialDelaySeconds: 15
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+```
 
 ### Persistent Storage
 
@@ -357,7 +439,33 @@ Recommended for production:
 
 ### Health Checks
 
-The container includes health checks:
+The container supports both HTTP and exec health checks:
+
+**HTTP Probes (Recommended for HTTP mode):**
+
+```yaml
+livenessProbe:
+  httpGet:
+    path: /health
+    port: http
+    scheme: HTTP
+  initialDelaySeconds: 30
+  periodSeconds: 30
+  timeoutSeconds: 10
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /readiness
+    port: http
+    scheme: HTTP
+  initialDelaySeconds: 15
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+```
+
+**Exec Probes (Legacy, for stdio mode):**
 
 ```yaml
 livenessProbe:
