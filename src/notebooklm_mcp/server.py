@@ -580,12 +580,58 @@ async def get_notebook_sources(
 
 
 # ============================================================================
+# Health Check Endpoints
+# ============================================================================
+
+@mcp.custom_route("/health", methods=["GET"])
+async def health_check(request):
+    """Health check endpoint for Kubernetes probes."""
+    from starlette.responses import JSONResponse
+    return JSONResponse({
+        "status": "healthy",
+        "transport": os.getenv("MCP_TRANSPORT", "stdio"),
+        "headless": get_headless_mode()
+    })
+
+@mcp.custom_route("/readiness", methods=["GET"])
+async def readiness_check(request):
+    """Readiness probe - checks if browser can be initialized."""
+    from starlette.responses import JSONResponse
+    try:
+        from playwright.async_api import async_playwright
+        return JSONResponse({"status": "ready", "playwright": "available"})
+    except Exception as e:
+        return JSONResponse(
+            {"status": "not_ready", "error": str(e)},
+            status_code=503
+        )
+
+
+# ============================================================================
 # Entry point
 # ============================================================================
 
 def main():
-    """Run the MCP server."""
-    mcp.run()
+    """Run the MCP server with configurable transport."""
+    import os
+
+    # Get transport mode from environment
+    transport = os.getenv("MCP_TRANSPORT", "stdio").lower()
+
+    if transport == "streamable-http":
+        # HTTP mode for Kubernetes/OpenShift
+        host = os.getenv("MCP_HOST", "0.0.0.0")
+        port = int(os.getenv("MCP_PORT", "8080"))
+
+        print(f"Starting MCP server in HTTP mode on {host}:{port}")
+        mcp.run(
+            transport="streamable-http",
+            host=host,
+            port=port
+        )
+    else:
+        # stdio mode for Claude Desktop (default)
+        mcp.run(transport="stdio")
 
 
 if __name__ == "__main__":

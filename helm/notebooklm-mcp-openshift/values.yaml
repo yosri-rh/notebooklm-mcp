@@ -153,6 +153,11 @@ persistence:
 
 # Environment variables
 env:
+  # MCP Server Transport Mode
+  MCP_TRANSPORT: "streamable-http"
+  MCP_HOST: "0.0.0.0"
+  MCP_PORT: "8080"
+
   NOTEBOOKLM_HEADLESS: "true"
   LOG_LEVEL: "INFO"
 
@@ -197,11 +202,10 @@ affinity:
 # Probes configuration
 livenessProbe:
   enabled: true
-  exec:
-    command:
-    - python3
-    - -c
-    - "import sys; sys.exit(0)"
+  httpGet:
+    path: /health
+    port: http
+    scheme: HTTP
   initialDelaySeconds: 30
   periodSeconds: 30
   timeoutSeconds: 10
@@ -209,11 +213,10 @@ livenessProbe:
 
 readinessProbe:
   enabled: true
-  exec:
-    command:
-    - python3
-    - -c
-    - "import sys; sys.exit(0)"
+  httpGet:
+    path: /readiness
+    port: http
+    scheme: HTTP
   initialDelaySeconds: 15
   periodSeconds: 10
   timeoutSeconds: 5
