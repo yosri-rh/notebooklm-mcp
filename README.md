@@ -101,7 +101,7 @@ This MCP server is **designed for local use with Claude Desktop**:
 - ☸️ **Kubernetes**: Helm chart (experimental, single-user per pod)
 - 🔴 **OpenShift**: Helm chart with Routes and SCCs (experimental, single-user per pod)
 
-See [CONTAINERIZATION_SUMMARY.md](CONTAINERIZATION_SUMMARY.md) and [OPENSHIFT_SUMMARY.md](OPENSHIFT_SUMMARY.md) for experimental deployment guides.
+See [CONTAINERIZATION_SUMMARY.md](docs/CONTAINERIZATION_SUMMARY.md) and [OPENSHIFT_SUMMARY.md](docs/OPENSHIFT_SUMMARY.md) for experimental deployment guides.
 
 ## Quick Start (Local Development)
 
