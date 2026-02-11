@@ -583,23 +583,28 @@ async def get_notebook_sources(
 # Health Check Endpoints
 # ============================================================================
 
-@mcp.get("/health")
-async def health_check():
+@mcp.custom_route("/health", methods=["GET"])
+async def health_check(request):
     """Health check endpoint for Kubernetes probes."""
-    return {
+    from starlette.responses import JSONResponse
+    return JSONResponse({
         "status": "healthy",
         "transport": os.getenv("MCP_TRANSPORT", "stdio"),
         "headless": get_headless_mode()
-    }
+    })
 
-@mcp.get("/readiness")
-async def readiness_check():
+@mcp.custom_route("/readiness", methods=["GET"])
+async def readiness_check(request):
     """Readiness probe - checks if browser can be initialized."""
+    from starlette.responses import JSONResponse
     try:
         from playwright.async_api import async_playwright
-        return {"status": "ready", "playwright": "available"}
+        return JSONResponse({"status": "ready", "playwright": "available"})
     except Exception as e:
-        return {"status": "not_ready", "error": str(e)}, 503
+        return JSONResponse(
+            {"status": "not_ready", "error": str(e)},
+            status_code=503
+        )
 
 
 # ============================================================================
