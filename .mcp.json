@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "notebooklm": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/Users/ybenmahf/Documents/mcp-learning/notebooklm-mcp",
+        "run",
+        "notebooklm-mcp"
+      ],
+      "env": {
+        "NOTEBOOKLM_HEADLESS": "true"
+      }
+    }
+  }
+}
