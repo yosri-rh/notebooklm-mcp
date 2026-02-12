@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "notebooklm": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/absolute/path/to/notebooklm-mcp",
+        "run",
+        "notebooklm-mcp"
+      ],
+      "env": {
+        "NOTEBOOKLM_HEADLESS": "true"
+      },
+      "description": "NotebookLM MCP server via stdio transport (auto-managed)"
+    }
+  }
+}

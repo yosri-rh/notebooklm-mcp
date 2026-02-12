@@ -161,6 +161,32 @@ NOTEBOOKLM_HEADLESS=false uv run notebooklm-mcp
 uv run playwright install chromium --force
 ```
 
+## Advanced: HTTP Transport (Multi-Project)
+
+The default setup uses **stdio transport** where Claude Code automatically manages the server.
+
+For **advanced users** working on multiple projects simultaneously, you can run one shared HTTP server:
+
+```bash
+# Start server once (keep running)
+cd /path/to/notebooklm-mcp
+MCP_TRANSPORT=streamable-http uv run notebooklm-mcp
+```
+
+Then in any project, use this `.mcp.json`:
+```json
+{
+  "mcpServers": {
+    "notebooklm": {
+      "type": "http",
+      "url": "http://localhost:8080/mcp"
+    }
+  }
+}
+```
+
+📖 **See full guide:** [HTTP Transport Guide](HTTP_TRANSPORT_GUIDE.md)
+
 ## Configuration
 
 ### Environment Variables (Optional)

@@ -103,6 +103,49 @@ Show me all sources in my "Research Papers" notebook and tell me
 which ones are YouTube videos vs websites.
 ```
 
+## Transport Modes
+
+The NotebookLM MCP server supports two transport modes:
+
+### Stdio Transport (Default - Recommended)
+
+The server is automatically started and stopped by Claude Code. Each project spawns its own instance.
+
+**Use when:**
+- ✅ Working on one project at a time
+- ✅ You want automatic server lifecycle management
+- ✅ You prefer simplicity
+
+**Configuration:** Already set up in `.mcp.json`
+
+### HTTP Transport (Advanced - Multi-Project)
+
+Run one server instance and connect to it from multiple projects.
+
+**Use when:**
+- ✅ Working on multiple projects simultaneously
+- ✅ You want to share one server across projects
+- ✅ You need to reduce resource usage
+
+**Quick setup:**
+```bash
+# Terminal 1: Start server once
+cd /path/to/notebooklm-mcp
+MCP_TRANSPORT=streamable-http uv run notebooklm-mcp
+
+# Terminal 2+: In any project, create .mcp.json
+{
+  "mcpServers": {
+    "notebooklm": {
+      "type": "http",
+      "url": "http://localhost:8080/mcp"
+    }
+  }
+}
+```
+
+📖 **Full guide:** See [HTTP Transport Guide](docs/HTTP_TRANSPORT_GUIDE.md) for detailed instructions, background services, and best practices.
+
 ## Testing the MCP Server
 
 Test the server with MCP Inspector before using with Claude Code:
