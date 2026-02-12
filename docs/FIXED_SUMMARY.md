@@ -63,9 +63,9 @@ Then in the inspector:
 2. Click "Execute"
 3. View your notebooks in the response
 
-## Using with Claude Desktop
+## Using with Claude Code
 
-Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
+The `.mcp.json` file in the project root configures the server:
 
 ```json
 {
@@ -86,7 +86,12 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 }
 ```
 
-Restart Claude Desktop, then try:
+Verify the server is loaded:
+```bash
+claude mcp list
+```
+
+Then try these commands in Claude Code:
 - "List my NotebookLM notebooks"
 - "Query notebook 087767c7-d9e9-4528-abec-ef3f19857aab: What are the main topics?"
 - "Add https://docs.openshift.com to notebook 12840176-90b8-4761-825b-dca0df4f902b"
@@ -130,9 +135,9 @@ List sources in a notebook
 
 ## Next Steps
 
-1. **Test the MCP server** with Claude Desktop or MCP Inspector
+1. **Test the MCP server** with Claude Code or MCP Inspector
 2. **Try querying your OpenShift documentation** notebooks
 3. **Create new notebooks** for other topics
 4. **Generate study guides** from your sources
 
-The MCP server is now fully functional and ready to use! 🎉
+The MCP server is now fully functional and ready to use with Claude Code! 🎉

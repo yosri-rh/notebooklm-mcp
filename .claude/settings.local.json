@@ -25,7 +25,9 @@
       "Bash(chmod:*)",
       "Bash(git commit:*)",
       "Bash(git checkout:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(oc new-project:*)"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true
 }

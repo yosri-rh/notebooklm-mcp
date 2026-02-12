@@ -33,8 +33,8 @@ This project adheres to a code of conduct. By participating, you are expected to
 ### Prerequisites
 - Python 3.10 or higher
 - [uv](https://github.com/astral-sh/uv) package manager
-- Podman (for containerization testing)
-- Kubernetes/Helm (for deployment testing)
+- Claude Code CLI (for testing)
+- Podman (optional, for containerization testing)
 
 ### Installation
 
@@ -57,6 +57,8 @@ This project adheres to a code of conduct. By participating, you are expected to
    ```bash
    cp .env.example .env
    ```
+
+5. Verify `.mcp.json` is configured in the project root
 
 ## Making Changes
 
@@ -97,7 +99,18 @@ This project adheres to a code of conduct. By participating, you are expected to
 
 ## Testing
 
-### Local Testing
+### Local Testing with Claude Code
+
+```bash
+# Verify MCP server is registered
+claude mcp list
+
+# Test in Claude Code by asking:
+# "List my NotebookLM notebooks"
+```
+
+### Direct Server Testing
+
 ```bash
 # Test listing notebooks
 uv run python test_final.py
@@ -105,29 +118,24 @@ uv run python test_final.py
 # Test with headless browser
 NOTEBOOKLM_HEADLESS=true uv run notebooklm-mcp
 
-# Test with visible browser
+# Test with visible browser (debug)
 NOTEBOOKLM_HEADLESS=false uv run notebooklm-mcp
 ```
 
-### Podman Testing
+### MCP Inspector Testing
+
+```bash
+npx @modelcontextprotocol/inspector uv --directory . run notebooklm-mcp
+```
+
+### Advanced: Container Testing (Optional)
+
 ```bash
 # Build image
 podman build -t notebooklm-mcp:test .
 
 # Run container
 podman-compose up
-```
-
-### Helm Testing
-```bash
-# Lint chart
-helm lint helm/notebooklm-mcp
-
-# Dry run
-helm install test-release helm/notebooklm-mcp --dry-run --debug
-
-# Template output
-helm template test-release helm/notebooklm-mcp
 ```
 
 ## Submitting Changes
@@ -180,18 +188,6 @@ async def list_notebooks() -> List[Dict[str, str]]:
 - Reference issues in commits (e.g., `fixes #123`)
 - Keep commits focused and atomic
 
-### Podman/Containerfile
-- Optimize for image size
-- Use multi-stage builds
-- Follow security best practices
-- Document all ENV variables
-
-### Helm Charts
-- Follow Helm best practices
-- Use meaningful default values
-- Document all values in values.yaml
-- Test with different configurations
-
 ## Areas for Contribution
 
 We welcome contributions in these areas:
@@ -201,19 +197,18 @@ We welcome contributions in these areas:
 - [ ] Improve error handling and logging
 - [ ] Add support for more NotebookLM features
 - [ ] Improve authentication flow
-- [ ] Add monitoring and observability
+- [ ] Better Claude Code integration examples
 
 ### Medium Priority
 - [ ] Performance optimizations
 - [ ] Better documentation
 - [ ] Example use cases and tutorials
-- [ ] CI/CD improvements
 - [ ] Security enhancements
+- [ ] CI/CD improvements
 
 ### Low Priority
-- [ ] Additional deployment options
+- [ ] Additional deployment options (containerization)
 - [ ] UI for configuration
-- [ ] Additional language support
 - [ ] Plugin system
 
 ## Questions?

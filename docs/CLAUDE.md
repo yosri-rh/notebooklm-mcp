@@ -1,4 +1,4 @@
-Perfect! ✅ The NotebookLM MCP server is now fully installed and ready to use. Here's what was completed:
+Perfect! ✅ The NotebookLM MCP server is now fully installed and ready to use with Claude Code. Here's what was completed:
 
   ✅ Installation Summary
 
@@ -28,8 +28,16 @@ Perfect! ✅ The NotebookLM MCP server is now fully installed and ready to use. 
   uv run python scripts/setup_auth.py
   This opens a browser where you sign in to Google and access NotebookLM.
 
-  2. Test the MCP server
+  2. Verify the .mcp.json configuration
+
+  Check that .mcp.json is configured in the project root.
+  Claude Code will automatically load the MCP server.
+
+  3. Test the MCP server
 
   # Test with MCP Inspector
   npx @modelcontextprotocol/inspector uv --directory /path/to/notebooklm-mcp run notebooklm-mcp
-  
+
+  4. Start using with Claude Code
+
+  Just start asking Claude Code to interact with your NotebookLM notebooks!

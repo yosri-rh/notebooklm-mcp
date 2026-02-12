@@ -1,8 +1,8 @@
 # NotebookLM MCP Server
 
-Connect Claude Desktop to Google NotebookLM using browser automation.
+Connect Claude Code to Google NotebookLM using browser automation.
 
-🖥️ **Local Development First** | 🐳 **Container Support** | 🧪 **Kubernetes/OpenShift Experimental**
+🖥️ **Claude Code Integration** | 🤖 **Browser Automation** | 📚 **NotebookLM Tools**
 
 ## ⚠️ Important Notes
 
@@ -49,24 +49,6 @@ NotebookLM is a JavaScript single-page application (SPA). To automate it, we nee
 - Handles Google authentication
 - Provides full browser capabilities
 
-### Container Size: 800MB-2GB
-
-This is **normal** for browser automation containers:
-
-```
-Base Python 3.12:           ~150 MB
-Chromium browser:           ~300 MB
-System dependencies:        ~200 MB (X11, fonts, codecs)
-Python packages:            ~150 MB (Playwright, FastMCP)
-Application code:            ~5 MB
-Total:                      800 MB - 2 GB
-```
-
-**Comparison with similar tools:**
-- Selenium Chrome: ~1.2 GB
-- Browserless: ~1.1 GB
-- Playwright official: ~900 MB
-
 ### Alternative: NotebookLM Enterprise API
 
 Google offers **NotebookLM Enterprise** with an official API, but it:
@@ -78,32 +60,7 @@ Google offers **NotebookLM Enterprise** with an official API, but it:
 
 Reference: [NotebookLM Enterprise API Docs](https://docs.cloud.google.com/gemini/enterprise/notebooklm-enterprise/docs/api-notebooks)
 
-## 🚀 Deployment Options
-
-### Primary Use Case: Local Development
-
-This MCP server is **designed for local use with Claude Desktop**:
-
-- ✅ **Python (Recommended)**: Direct integration with Claude Desktop via stdio
-- ✅ **Podman Local**: Containerized testing on your local machine
-
-### Experimental: Containerized Deployments
-
-⚠️ **Multi-user deployments on Kubernetes/OpenShift are experimental** due to authentication challenges:
-
-- Each user needs their own Google account session
-- No official NotebookLM API for programmatic authentication
-- Browser automation (Playwright) is designed for single-user scenarios
-- Significant complexity for session isolation and management
-
-**Available for reference/experimentation:**
-- 🐳 **Podman**: Single-user containerized deployment
-- ☸️ **Kubernetes**: Helm chart (experimental, single-user per pod)
-- 🔴 **OpenShift**: Helm chart with Routes and SCCs (experimental, single-user per pod)
-
-See [CONTAINERIZATION_SUMMARY.md](docs/CONTAINERIZATION_SUMMARY.md) and [OPENSHIFT_SUMMARY.md](docs/OPENSHIFT_SUMMARY.md) for experimental deployment guides.
-
-## Quick Start (Local Development)
+## 🚀 Quick Start
 
 ```bash
 # 1. Install dependencies
@@ -113,16 +70,13 @@ uv run playwright install chromium
 # 2. Authenticate with Google
 uv run python scripts/setup_auth.py
 
-# 3. Configure Claude Desktop
-# Add to ~/Library/Application Support/Claude/claude_desktop_config.json
-# See "Claude Desktop Integration" section below
-
-# 4. Restart Claude Desktop and start using NotebookLM tools!
+# 3. The .mcp.json file is already configured
+# Just use Claude Code and start interacting with NotebookLM!
 ```
 
-### Example Usage in Claude Desktop
+### Example Usage in Claude Code
 
-Once configured, try these prompts in Claude Desktop:
+Once configured, try these prompts in Claude Code:
 
 **Create and populate a notebook:**
 ```
@@ -149,9 +103,9 @@ Show me all sources in my "Research Papers" notebook and tell me
 which ones are YouTube videos vs websites.
 ```
 
-### Testing the MCP Server
+## Testing the MCP Server
 
-Test the server with MCP Inspector before using with Claude Desktop:
+Test the server with MCP Inspector before using with Claude Code:
 
 ```bash
 # Install and run MCP Inspector
@@ -256,163 +210,12 @@ notebooklm-mcp/
 |----------|---------|-------------|
 | `NOTEBOOKLM_HEADLESS` | `true` | Run browser in headless mode. Set to `false` to see browser (useful for debugging) |
 | `LOG_LEVEL` | `INFO` | Logging verbosity: `DEBUG`, `INFO`, `WARNING`, `ERROR` |
-| `MCP_TRANSPORT` | `stdio` | Transport mode: `stdio` (Claude Desktop) or `streamable-http` (containers) |
-| `MCP_HOST` | `0.0.0.0` | HTTP bind address (only for `streamable-http` mode) |
-| `MCP_PORT` | `8080` | HTTP port (only for `streamable-http` mode) |
 
-**Note:** For Claude Desktop usage, you typically don't need a `.env` file - the default settings work fine. The `.env` file is mainly useful for debugging or container deployments.
+**Note:** For Claude Code usage, you typically don't need a `.env` file - the default settings work fine. The `.env` file is mainly useful for debugging.
 
-## Local Podman Deployment
+## Claude Code Integration
 
-For containerized local testing without Kubernetes complexity:
-
-### Using Podman Compose (Recommended)
-
-```bash
-# Clone and navigate to project
-git clone https://github.com/yosri-rh/notebooklm-mcp.git
-cd notebooklm-mcp
-
-# Start the container
-podman-compose up -d
-
-# View logs
-podman-compose logs -f
-
-# Authenticate with Google (required once)
-podman exec -it notebooklm-mcp uv run python scripts/setup_auth.py
-
-# Stop the container
-podman-compose down
-```
-
-### Manual Podman Commands
-
-```bash
-# Build the image
-podman build -t notebooklm-mcp:latest -f Containerfile .
-
-# Create a volume for authentication data
-podman volume create notebooklm-chrome-data
-
-# Run the container (stdio mode for local use)
-podman run -d \
-  --name notebooklm-mcp \
-  --restart unless-stopped \
-  -e NOTEBOOKLM_HEADLESS=true \
-  -e LOG_LEVEL=INFO \
-  -v notebooklm-chrome-data:/app/chrome-user-data \
-  notebooklm-mcp:latest
-
-# Authenticate with Google
-podman exec -it notebooklm-mcp uv run python scripts/setup_auth.py
-
-# View logs
-podman logs -f notebooklm-mcp
-
-# Stop and remove
-podman stop notebooklm-mcp
-podman rm notebooklm-mcp
-```
-
-### Testing HTTP Mode Locally
-
-```bash
-# Run in HTTP mode for testing
-podman run -d \
-  --name notebooklm-mcp-http \
-  -p 8080:8080 \
-  -e MCP_TRANSPORT=streamable-http \
-  -e MCP_HOST=0.0.0.0 \
-  -e MCP_PORT=8080 \
-  -e NOTEBOOKLM_HEADLESS=true \
-  -v notebooklm-chrome-data:/app/chrome-user-data \
-  notebooklm-mcp:latest
-
-# Test health endpoint
-curl http://localhost:8080/health
-
-# Connect with MCP Inspector
-npx @modelcontextprotocol/inspector http://localhost:8080/mcp
-```
-
-## Local Podman Deployment
-
-For containerized local testing without Kubernetes complexity:
-
-### Using Podman Compose (Recommended)
-
-```bash
-# Clone and navigate to project
-git clone https://github.com/yosri-rh/notebooklm-mcp.git
-cd notebooklm-mcp
-
-# Start the container
-podman-compose up -d
-
-# View logs
-podman-compose logs -f
-
-# Authenticate with Google (required once)
-podman exec -it notebooklm-mcp uv run python scripts/setup_auth.py
-
-# Stop the container
-podman-compose down
-```
-
-### Manual Podman Commands
-
-```bash
-# Build the image
-podman build -t notebooklm-mcp:latest -f Containerfile .
-
-# Create a volume for authentication data
-podman volume create notebooklm-chrome-data
-
-# Run the container (stdio mode for local use)
-podman run -d \
-  --name notebooklm-mcp \
-  --restart unless-stopped \
-  -e NOTEBOOKLM_HEADLESS=true \
-  -e LOG_LEVEL=INFO \
-  -v notebooklm-chrome-data:/app/chrome-user-data \
-  notebooklm-mcp:latest
-
-# Authenticate with Google
-podman exec -it notebooklm-mcp uv run python scripts/setup_auth.py
-
-# View logs
-podman logs -f notebooklm-mcp
-
-# Stop and remove
-podman stop notebooklm-mcp
-podman rm notebooklm-mcp
-```
-
-### Testing HTTP Mode Locally
-
-```bash
-# Run in HTTP mode for testing
-podman run -d \
-  --name notebooklm-mcp-http \
-  -p 8080:8080 \
-  -e MCP_TRANSPORT=streamable-http \
-  -e MCP_HOST=0.0.0.0 \
-  -e MCP_PORT=8080 \
-  -e NOTEBOOKLM_HEADLESS=true \
-  -v notebooklm-chrome-data:/app/chrome-user-data \
-  notebooklm-mcp:latest
-
-# Test health endpoint
-curl http://localhost:8080/health
-
-# Connect with MCP Inspector
-npx @modelcontextprotocol/inspector http://localhost:8080/mcp
-```
-
-## Claude Desktop Integration
-
-Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
+The `.mcp.json` file in the project root configures the MCP server:
 
 ```json
 {
@@ -421,7 +224,7 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
       "command": "uv",
       "args": [
         "--directory",
-        "/path/to/notebooklm-mcp",
+        "/absolute/path/to/notebooklm-mcp",
         "run",
         "notebooklm-mcp"
       ],
@@ -433,39 +236,9 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 }
 ```
 
-Restart Claude Desktop after adding configuration.
+**Important:** Update the `--directory` path to match your actual project location.
 
-## HTTP Mode for Container Deployments (Experimental)
-
-⚠️ **Note**: HTTP mode is experimental and primarily for local container testing. Multi-user Kubernetes/OpenShift deployments face authentication challenges without an official NotebookLM API.
-
-The MCP server supports HTTP transport for containerized deployments.
-
-### Running in HTTP Mode
-
-```bash
-export MCP_TRANSPORT=streamable-http
-uv run notebooklm-mcp
-```
-
-Server available at: http://localhost:8080/mcp
-
-### Health Check Endpoints
-
-- `GET /health` - Liveness probe
-- `GET /readiness` - Readiness probe
-
-### Environment Variables
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| MCP_TRANSPORT | stdio | "stdio" or "streamable-http" |
-| MCP_HOST | 0.0.0.0 | HTTP bind address |
-| MCP_PORT | 8080 | HTTP port |
-
-For detailed deployment instructions, see:
-- [docs/README_DEPLOYMENT.md](docs/README_DEPLOYMENT.md) - Kubernetes deployment
-- [docs/OPENSHIFT_DEPLOYMENT.md](docs/OPENSHIFT_DEPLOYMENT.md) - OpenShift deployment
+Once configured, Claude Code will automatically load the MCP server when you work in this directory.
 
 ## Testing
 
@@ -481,7 +254,7 @@ npx @modelcontextprotocol/inspector uv --directory /path/to/notebooklm-mcp run n
 NOTEBOOKLM_HEADLESS=false uv run notebooklm-mcp
 ```
 
-### In Claude Desktop
+### In Claude Code
 
 Try these prompts:
 - "List my NotebookLM notebooks"
@@ -503,11 +276,6 @@ List all available NotebookLM notebooks.
     "id": "abc123def456",
     "title": "Research Notes",
     "url": "https://notebooklm.google.com/notebook/abc123def456"
-  },
-  {
-    "id": "xyz789ghi012",
-    "title": "Project Documentation",
-    "url": "https://notebooklm.google.com/notebook/xyz789ghi012"
   }
 ]
 ```
@@ -520,15 +288,6 @@ Create a new NotebookLM notebook.
 
 **Returns**: Created notebook details
 
-**Example Output**:
-```json
-{
-  "id": "new123notebook",
-  "title": "My New Notebook",
-  "url": "https://notebooklm.google.com/notebook/new123notebook"
-}
-```
-
 ### `add_source(notebook_id: str, source_type: str, content: str)`
 Add a source to a notebook.
 
@@ -539,15 +298,6 @@ Add a source to a notebook.
 
 **Returns**: Status message
 
-**Example Output**:
-```json
-{
-  "status": "success",
-  "message": "Added website source to notebook",
-  "notebook_id": "abc123def456"
-}
-```
-
 ### `query_notebook(notebook_id: str, query: str)`
 Ask NotebookLM's AI a question about the notebook's sources.
 
@@ -557,18 +307,6 @@ Ask NotebookLM's AI a question about the notebook's sources.
 
 **Returns**: AI-generated response as string
 
-**Example Output**:
-```
-Based on the sources provided, the main topics covered include:
-
-1. Machine Learning Fundamentals - including supervised and unsupervised learning
-2. Neural Network Architectures - covering CNNs, RNNs, and Transformers
-3. Training Best Practices - optimization techniques and regularization methods
-
-The sources particularly emphasize the importance of data preprocessing and
-model evaluation strategies.
-```
-
 ### `generate_study_guide(notebook_id: str, guide_type: str)`
 Generate a study guide from notebook sources.
 
@@ -577,16 +315,6 @@ Generate a study guide from notebook sources.
 - `guide_type`: "faq", "briefing_doc", or "table_of_contents"
 
 **Returns**: Status message
-
-**Example Output**:
-```json
-{
-  "status": "success",
-  "message": "Generated faq study guide",
-  "notebook_id": "abc123def456",
-  "guide_type": "faq"
-}
-```
 
 ### `generate_audio_overview(notebook_id: str)`
 Generate an audio overview (podcast) from notebook sources.
@@ -598,16 +326,6 @@ Generate an audio overview (podcast) from notebook sources.
 
 **Returns**: Status message
 
-**Example Output**:
-```json
-{
-  "status": "success",
-  "message": "Audio overview generation started",
-  "notebook_id": "abc123def456",
-  "note": "Audio generation is async and may take several minutes"
-}
-```
-
 ### `get_notebook_sources(notebook_id: str)`
 Get list of sources in a notebook.
 
@@ -616,44 +334,17 @@ Get list of sources in a notebook.
 
 **Returns**: List of sources with index and title
 
-**Example Output**:
-```json
-[
-  {
-    "index": "1",
-    "title": "Introduction to Machine Learning - Wikipedia"
-  },
-  {
-    "index": "2",
-    "title": "Neural Networks Explained - YouTube"
-  },
-  {
-    "index": "3",
-    "title": "Custom text notes on deep learning concepts"
-  }
-]
-```
-
 ## Troubleshooting
 
 ### Common Issues
 
-#### MCP server not showing in Claude Desktop
+#### MCP server not showing in Claude Code
 
-1. Check Claude Desktop config file location:
-   - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
-   - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
-   - Linux: `~/.config/Claude/claude_desktop_config.json`
-
+1. Check that `.mcp.json` exists in the project root
 2. Verify JSON syntax is valid (no trailing commas)
-
 3. Check the path in config points to your project directory
-
-4. Restart Claude Desktop completely (quit and reopen)
-
-5. Check Claude Desktop logs:
-   - macOS: `~/Library/Logs/Claude/mcp*.log`
-   - Windows: `%APPDATA%\Claude\logs\mcp*.log`
+4. Restart Claude Code
+5. Run `claude mcp list` to verify the server is registered
 
 #### Authentication expired
 
@@ -695,25 +386,12 @@ NOTEBOOKLM_HEADLESS=false uv run notebooklm-mcp
 LOG_LEVEL=DEBUG uv run notebooklm-mcp
 ```
 
-#### Tools not responding in Claude
+#### Tools not responding in Claude Code
 
-1. Check if MCP server process is running
+1. Check if MCP server is registered: `claude mcp list`
 2. Try simple tool first: "List my NotebookLM notebooks"
-3. Check for errors in Claude Desktop logs
-4. Restart the MCP server by restarting Claude Desktop
-
-#### Podman/Container issues
-
-```bash
-# Check container logs
-podman logs -f notebooklm-mcp
-
-# Exec into container to debug
-podman exec -it notebooklm-mcp /bin/bash
-
-# Verify chrome-user-data volume
-podman volume inspect notebooklm-chrome-data
-```
+3. Check for errors in the output
+4. Restart Claude Code
 
 ## Project Structure
 
@@ -728,6 +406,7 @@ notebooklm-mcp/
 ├── scripts/
 │   └── setup_auth.py   # Interactive Google login
 ├── chrome-user-data/   # Persistent browser profile (gitignored)
+├── .mcp.json          # Claude Code MCP server configuration
 ├── pyproject.toml
 ├── .env
 └── README.md
