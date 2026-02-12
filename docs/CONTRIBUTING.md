@@ -62,6 +62,8 @@ This project adheres to a code of conduct. By participating, you are expected to
 
 ## Making Changes
 
+⚠️ **Important:** The `main` branch is protected. You cannot push directly to it. All changes must be made through pull requests. See [Branch Protection Rules](../.github/BRANCH_PROTECTION.md) for details.
+
 1. Create a new branch:
    ```bash
    git checkout -b feature/your-feature-name
