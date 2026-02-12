@@ -91,10 +91,13 @@ class Selectors:
 
     # Chat/Query interface
     CHAT_INPUT: List[str] = [
-        'textarea[placeholder*="ask" i]',
-        'textarea[aria-label*="ask" i]',
-        '[data-testid="chat-input"]',
-        'textarea[placeholder*="question" i]',
+        'textarea[aria-label*="query" i]',  # Current: aria-label="Query box"
+        'textarea[placeholder*="start typing" i]',  # Current: placeholder="Start typing..."
+        'textarea',  # Fallback: generic textarea (notebook pages typically have only one)
+        'textarea[placeholder*="ask" i]',  # Legacy
+        'textarea[aria-label*="ask" i]',  # Legacy
+        '[data-testid="chat-input"]',  # Legacy
+        'textarea[placeholder*="question" i]',  # Legacy
     ]
 
     CHAT_SUBMIT: List[str] = [
@@ -104,9 +107,12 @@ class Selectors:
     ]
 
     CHAT_RESPONSE: List[str] = [
-        '[data-testid="chat-message"]',
-        '[role="article"]',
-        'div[class*="message"]',
+        '.to-user-message-card-content .message-text-content',  # Current: AI response text content
+        '.to-user-message-inner-content',  # Current: Alternative AI response container
+        'div[class*="to-user-message"]',  # Current: AI message cards
+        '[data-testid="chat-message"]',  # Legacy
+        '[role="article"]',  # Legacy
+        'div[class*="message"]',  # Legacy fallback
     ]
 
     # Study guide/document generation
@@ -147,6 +153,7 @@ class Selectors:
 
     # Common UI elements
     LOADING_INDICATOR: List[str] = [
+        '.thinking-message',  # Current: "Assessing relevance..." message
         '[aria-label*="loading" i]',
         '[role="progressbar"]',
         'div[class*="loading"]',

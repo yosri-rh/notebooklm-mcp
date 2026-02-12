@@ -340,21 +340,30 @@ async def query_notebook(
                 # Fallback: press Enter
                 await chat_input.press("Enter")
 
-            # Wait for response (AI takes time to generate)
-            await browser.page.wait_for_timeout(2000)
+            # Wait for thinking message to appear (indicates query is being processed)
+            await browser.page.wait_for_timeout(1000)
 
-            # Wait for loading to complete
+            # Wait for loading/thinking to complete (AI generates response)
             try:
+                # Wait for thinking message to disappear (indicates response is ready)
                 await browser.page.wait_for_selector(
-                    ', '.join(Selectors.LOADING_INDICATOR),
+                    '.thinking-message',
                     state="hidden",
-                    timeout=30000
+                    timeout=45000  # Increased timeout for complex queries
                 )
             except PlaywrightTimeoutError:
-                # Continue even if we don't detect loading indicator
-                pass
+                # If no thinking message detected, try other loading indicators
+                try:
+                    await browser.page.wait_for_selector(
+                        ', '.join(Selectors.LOADING_INDICATOR[1:]),  # Skip .thinking-message
+                        state="hidden",
+                        timeout=10000
+                    )
+                except PlaywrightTimeoutError:
+                    # Continue even if we don't detect loading indicator
+                    pass
 
-            # Additional wait for response to appear
+            # Additional wait for response to fully render
             await browser.page.wait_for_timeout(2000)
 
             # Get the latest response
