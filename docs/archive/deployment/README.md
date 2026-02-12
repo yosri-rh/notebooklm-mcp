@@ -4,7 +4,7 @@ This folder contains documentation for experimental containerized deployments of
 
 ## Primary Use Case: Claude Code
 
-The NotebookLM MCP server is designed for **local use with Claude Code**. See the main README.md and CLAUDE_CODE_SETUP.md for the recommended setup.
+The NotebookLM MCP server is designed for **local use with Claude Code**. See the main README.md and [CLAUDE_CODE_SETUP.md](../CLAUDE_CODE_SETUP.md) for the recommended setup.
 
 ## Experimental Deployments
 

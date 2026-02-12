@@ -10,7 +10,7 @@ The project is now **exclusively focused on Claude Code integration** instead of
 ## Changes Made
 
 ### 1. New Documentation
-- **CLAUDE_CODE_SETUP.md** - Quick start guide for Claude Code
+- **docs/CLAUDE_CODE_SETUP.md** - Quick start guide for Claude Code
 - Updated **README.md** - Removed all Claude Desktop references, focused on Claude Code
 - Updated **docs/CLAUDE.md** - Installation steps for Claude Code
 - Updated **docs/MCP_SERVER_TEST_REPORT.md** - Integration tests now reference Claude Code
@@ -66,10 +66,11 @@ The project is now **exclusively focused on Claude Code integration** instead of
 ```
 notebooklm-mcp/
 ├── README.md                    # Main docs - Claude Code focused
-├── CLAUDE_CODE_SETUP.md         # Quick start guide
 ├── .mcp.json                    # Claude Code MCP configuration
 ├── src/                         # Application code
 ├── docs/
+│   ├── CLAUDE_CODE_SETUP.md    # Quick start guide
+│   ├── CLAUDE_CODE_FOCUS.md    # Refactoring documentation
 │   ├── CLAUDE.md               # Installation guide
 │   ├── CONTRIBUTING.md         # Updated for Claude Code
 │   ├── FIXED_SUMMARY.md        # Updated for Claude Code
