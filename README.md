@@ -209,15 +209,132 @@ Your session is saved to `chrome-user-data/` (gitignored).
 
 ## Configuration
 
-Create `.env` file (optional):
+### Environment Variables (Optional)
+
+You can configure the MCP server using environment variables. There are two ways to set them:
+
+#### Option 1: Set Directly in Terminal (Quick Testing)
 
 ```bash
+# Run with custom settings
+NOTEBOOKLM_HEADLESS=false LOG_LEVEL=DEBUG uv run notebooklm-mcp
+```
+
+#### Option 2: Use .env File (Persistent Configuration)
+
+Create a `.env` file **in the project root directory** (next to `README.md`):
+
+```bash
+# From the project root directory
+cd /path/to/notebooklm-mcp
 cp .env.example .env
 ```
 
-Settings:
-- `NOTEBOOKLM_HEADLESS=true` - Run browser headless (set to `false` for debugging)
-- `LOG_LEVEL=INFO` - Logging level
+Edit `.env` with your preferred settings:
+
+```bash
+# Example .env file content
+NOTEBOOKLM_HEADLESS=true
+LOG_LEVEL=INFO
+```
+
+The `.env` file is automatically loaded when you run the server.
+
+**File Location:**
+```
+notebooklm-mcp/
+├── .env          # Your configuration file (create this)
+├── .env.example  # Template (already exists)
+├── README.md
+├── pyproject.toml
+└── ...
+```
+
+#### Available Settings
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `NOTEBOOKLM_HEADLESS` | `true` | Run browser in headless mode. Set to `false` to see browser (useful for debugging) |
+| `LOG_LEVEL` | `INFO` | Logging verbosity: `DEBUG`, `INFO`, `WARNING`, `ERROR` |
+| `MCP_TRANSPORT` | `stdio` | Transport mode: `stdio` (Claude Desktop) or `streamable-http` (containers) |
+| `MCP_HOST` | `0.0.0.0` | HTTP bind address (only for `streamable-http` mode) |
+| `MCP_PORT` | `8080` | HTTP port (only for `streamable-http` mode) |
+
+**Note:** For Claude Desktop usage, you typically don't need a `.env` file - the default settings work fine. The `.env` file is mainly useful for debugging or container deployments.
+
+## Local Podman Deployment
+
+For containerized local testing without Kubernetes complexity:
+
+### Using Podman Compose (Recommended)
+
+```bash
+# Clone and navigate to project
+git clone https://github.com/yosri-rh/notebooklm-mcp.git
+cd notebooklm-mcp
+
+# Start the container
+podman-compose up -d
+
+# View logs
+podman-compose logs -f
+
+# Authenticate with Google (required once)
+podman exec -it notebooklm-mcp uv run python scripts/setup_auth.py
+
+# Stop the container
+podman-compose down
+```
+
+### Manual Podman Commands
+
+```bash
+# Build the image
+podman build -t notebooklm-mcp:latest -f Containerfile .
+
+# Create a volume for authentication data
+podman volume create notebooklm-chrome-data
+
+# Run the container (stdio mode for local use)
+podman run -d \
+  --name notebooklm-mcp \
+  --restart unless-stopped \
+  -e NOTEBOOKLM_HEADLESS=true \
+  -e LOG_LEVEL=INFO \
+  -v notebooklm-chrome-data:/app/chrome-user-data \
+  notebooklm-mcp:latest
+
+# Authenticate with Google
+podman exec -it notebooklm-mcp uv run python scripts/setup_auth.py
+
+# View logs
+podman logs -f notebooklm-mcp
+
+# Stop and remove
+podman stop notebooklm-mcp
+podman rm notebooklm-mcp
+```
+
+### Testing HTTP Mode Locally
+
+```bash
+# Run in HTTP mode for testing
+podman run -d \
+  --name notebooklm-mcp-http \
+  -p 8080:8080 \
+  -e MCP_TRANSPORT=streamable-http \
+  -e MCP_HOST=0.0.0.0 \
+  -e MCP_PORT=8080 \
+  -e NOTEBOOKLM_HEADLESS=true \
+  -v notebooklm-chrome-data:/app/chrome-user-data \
+  notebooklm-mcp:latest
+
+# Test health endpoint
+curl http://localhost:8080/health
+
+# Connect with MCP Inspector
+npx @modelcontextprotocol/inspector http://localhost:8080/mcp
+```
 
 ## Local Podman Deployment
 
