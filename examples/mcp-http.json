@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "notebooklm": {
+      "type": "http",
+      "url": "http://localhost:8080/mcp",
+      "description": "NotebookLM MCP server via HTTP transport (shared instance)"
+    }
+  }
+}
